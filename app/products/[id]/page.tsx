@@ -2,7 +2,7 @@
 
 import { Suspense } from "react"
 import { useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import Header from "@/components/header"
@@ -20,12 +20,20 @@ function FooterSkeleton() {
   return <div className="h-32 bg-muted animate-pulse" />
 }
 
-function ProductPageContent({ productId }: { productId: number }) {
+export default function ProductPage() {
+  const params = useParams()
   const router = useRouter()
   const { addItem } = useCart()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist()
 
-  const baseProduct = PRODUCTS.find((p) => p.id === productId)
+  const productId = useMemo(() => {
+    if (!params?.id) return Number.NaN
+    return Number.parseInt(String(params.id), 10)
+  }, [params?.id])
+
+  const baseProduct = useMemo(() => {
+    return PRODUCTS.find((p) => p.id === productId)
+  }, [productId])
 
   const [quantity, setQuantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
@@ -55,13 +63,15 @@ function ProductPageContent({ productId }: { productId: number }) {
   }, [selectedProduct])
 
   useEffect(() => {
-    setSelectedVariantId(productId)
-    setSelectedImageIndex(0)
-    setQuantity(1)
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior })
+    if (productId && !isNaN(productId)) {
+      setSelectedVariantId(productId)
+      setSelectedImageIndex(0)
+      setQuantity(1)
+      window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior })
+    }
   }, [productId])
 
-  if (!baseProduct || !selectedProduct) {
+  if (!baseProduct || !selectedProduct || isNaN(productId)) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Suspense fallback={<HeaderSkeleton />}>
@@ -352,11 +362,4 @@ function ProductPageContent({ productId }: { productId: number }) {
       </Suspense>
     </div>
   )
-}
-
-export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params
-  const productId = Number.parseInt(resolvedParams.id, 10)
-
-  return <ProductPageContent productId={productId} />
 }
