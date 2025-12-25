@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import Header from "@/components/header"
@@ -7,17 +8,29 @@ import Footer from "@/components/footer"
 import { useWishlist } from "@/hooks/use-wishlist"
 import { Heart, ArrowRight } from "lucide-react"
 
+function HeaderSkeleton() {
+  return <div className="h-20 bg-muted animate-pulse" />
+}
+
+function FooterSkeleton() {
+  return <div className="h-32 bg-muted animate-pulse" />
+}
+
 export default function WishlistPage() {
   const { wishlist, removeItem, isLoaded } = useWishlist()
 
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Suspense fallback={<HeaderSkeleton />}>
+          <Header />
+        </Suspense>
         <div className="max-w-7xl mx-auto px-4 py-24">
           <div className="animate-pulse">Loading wishlist...</div>
         </div>
-        <Footer />
+        <Suspense fallback={<FooterSkeleton />}>
+          <Footer />
+        </Suspense>
       </div>
     )
   }
@@ -25,7 +38,9 @@ export default function WishlistPage() {
   if (wishlist.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Suspense fallback={<HeaderSkeleton />}>
+          <Header />
+        </Suspense>
 
         <div className="max-w-7xl mx-auto px-4 py-24 text-center">
           <div className="flex justify-center mb-6">
@@ -42,14 +57,18 @@ export default function WishlistPage() {
           </Link>
         </div>
 
-        <Footer />
+        <Suspense fallback={<FooterSkeleton />}>
+          <Footer />
+        </Suspense>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Suspense fallback={<HeaderSkeleton />}>
+        <Header />
+      </Suspense>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-light mb-12 text-pretty">My Wishlist</h1>
@@ -99,7 +118,9 @@ export default function WishlistPage() {
         </div>
       </div>
 
-      <Footer />
+      <Suspense fallback={<FooterSkeleton />}>
+        <Footer />
+      </Suspense>
     </div>
   )
 }
