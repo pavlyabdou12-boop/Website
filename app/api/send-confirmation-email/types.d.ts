@@ -1,25 +1,25 @@
-declare module "nodemailer" {
-  export interface TransportOptions {
-    host?: string
-    port?: number
-    secure?: boolean
-    auth?: {
-      user?: string
-      pass?: string
+declare module "resend" {
+  export interface EmailResponse {
+    data?: {
+      id: string
+    }
+    error?: {
+      message: string
     }
   }
 
-  export interface MailOptions {
-    from?: string
-    to?: string
-    cc?: string
-    subject?: string
-    html?: string
+  export interface SendEmailOptions {
+    from: string
+    to: string | string[]
+    cc?: string | string[]
+    subject: string
+    html: string
   }
 
-  export interface Transporter {
-    sendMail(options: MailOptions): Promise<any>
+  export class Resend {
+    constructor(apiKey: string)
+    emails: {
+      send(options: SendEmailOptions): Promise<EmailResponse>
+    }
   }
-
-  export function createTransport(options: TransportOptions): Transporter
 }
