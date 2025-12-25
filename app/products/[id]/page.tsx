@@ -20,12 +20,11 @@ function FooterSkeleton() {
   return <div className="h-32 bg-muted animate-pulse" />
 }
 
-function ProductPageContent({ params }: { params: { id: string } }) {
+function ProductPageContent({ productId }: { productId: number }) {
   const router = useRouter()
   const { addItem } = useCart()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist()
 
-  const productId = Number.parseInt(params.id, 10)
   const baseProduct = PRODUCTS.find((p) => p.id === productId)
 
   const [quantity, setQuantity] = useState(1)
@@ -355,6 +354,9 @@ function ProductPageContent({ params }: { params: { id: string } }) {
   )
 }
 
-export default function ProductPage({ params }: { params: { id: string } }) {
-  return <ProductPageContent params={params} />
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
+  const productId = Number.parseInt(resolvedParams.id, 10)
+
+  return <ProductPageContent productId={productId} />
 }
