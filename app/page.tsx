@@ -5,7 +5,6 @@ import Image from "next/image"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { PRODUCTS } from "@/lib/product-data"
-import { Suspense } from "react"
 
 export default function HomePage() {
   const handleProductClick = () => {
@@ -14,9 +13,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Suspense fallback={<div className="h-16 bg-background" />}>
-        <Header />
-      </Suspense>
+      <Header />
 
       {/* Hero Banner */}
       <section className="relative h-screen bg-secondary">
@@ -123,9 +120,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <Suspense fallback={<div className="h-20 bg-background" />}>
-        <Footer />
-      </Suspense>
+      <Footer />
     </div>
   )
 }
