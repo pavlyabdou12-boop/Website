@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -10,6 +11,14 @@ import { PRODUCTS } from "@/lib/product-data"
 import { useCart } from "@/hooks/use-cart"
 import { useWishlist } from "@/hooks/use-wishlist"
 import { ChevronLeft, Heart, Share2, ChevronRight } from "lucide-react"
+
+function HeaderSkeleton() {
+  return <div className="h-20 bg-muted animate-pulse" />
+}
+
+function FooterSkeleton() {
+  return <div className="h-32 bg-muted animate-pulse" />
+}
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -56,7 +65,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   if (!baseProduct || !selectedProduct) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Suspense fallback={<HeaderSkeleton />}>
+          <Header />
+        </Suspense>
         <div className="flex items-center justify-center py-24">
           <div className="text-center">
             <h1 className="text-3xl font-light mb-4">Product Not Found</h1>
@@ -65,7 +76,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </Link>
           </div>
         </div>
-        <Footer />
+        <Suspense fallback={<FooterSkeleton />}>
+          <Footer />
+        </Suspense>
       </div>
     )
   }
@@ -113,7 +126,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      {/* Header and Footer wrapped in Suspense boundaries to fix useSearchParams prerender error */}
+      <Suspense fallback={<HeaderSkeleton />}>
+        <Header />
+      </Suspense>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
@@ -336,7 +352,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         )}
       </div>
 
-      <Footer />
+      {/* Footer wrapped in Suspense boundary */}
+      <Suspense fallback={<FooterSkeleton />}>
+        <Footer />
+      </Suspense>
     </div>
   )
 }
