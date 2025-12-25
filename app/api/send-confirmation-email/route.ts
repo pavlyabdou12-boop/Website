@@ -168,17 +168,29 @@ export async function POST(request: NextRequest) {
     }: { email: string; firstName: string; orderNumber: string; orderData: OrderData } = body
 
     if (!email || !firstName || !orderNumber || !orderData) {
+      console.error("[v0] Missing required fields:", {
+        email: !!email,
+        firstName: !!firstName,
+        orderNumber: !!orderNumber,
+        orderData: !!orderData,
+      })
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    console.log("[v0] Sending order confirmation email to:", email)
+    console.log("[v0] ==================== RESEND EMAIL DEBUG ====================")
+    console.log("[v0] API Key present:", !!process.env.RESEND_API_KEY)
+    console.log("[v0] API Key starts with:", process.env.RESEND_API_KEY?.substring(0, 10) + "...")
+    console.log("[v0] Customer email:", email)
     console.log("[v0] Order Number:", orderNumber)
-    console.log("[v0] Total: EGP", orderData.total.toFixed(2))
+    console.log("[v0] Total amount: EGP", orderData.total.toFixed(2))
+    console.log("[v0] Items count:", orderData.items.length)
+    console.log("[v0] CC recipients: haneenosman60@gmail.com, gannaosman2009@gmail.com, sisies2025@gmail.com")
+    console.log("[v0] ============================================================")
 
     const emailHTML = generateEmailHTML(orderData)
 
     const response = await resend.emails.send({
-      from: "Sisies Boutique <orders@sisies.com>",
+      from: "Sisies Boutique <onboarding@resend.dev>",
       to: email,
       cc: ["haneenosman60@gmail.com", "gannaosman2009@gmail.com", "sisies2025@gmail.com"],
       subject: `Order Confirmation - Order #${orderNumber}`,
@@ -186,11 +198,16 @@ export async function POST(request: NextRequest) {
     })
 
     if (response.error) {
-      console.error("[v0] Resend API error:", response.error)
+      console.error("[v0] ❌ Resend API error:")
+      console.error("[v0] Error message:", response.error.message)
+      console.error("[v0] Error code:", response.error.code || "N/A")
+      console.error("[v0] Full error:", JSON.stringify(response.error, null, 2))
       return NextResponse.json({ error: "Failed to send email", details: response.error }, { status: 500 })
     }
 
-    console.log("[v0] Email sent successfully. ID:", response.data?.id)
+    console.log("[v0] ✅ Email sent successfully!")
+    console.log("[v0] Email ID:", response.data?.id)
+    console.log("[v0] Timestamp:", new Date().toISOString())
 
     return NextResponse.json({
       success: true,
@@ -198,7 +215,11 @@ export async function POST(request: NextRequest) {
       emailId: response.data?.id,
     })
   } catch (error) {
-    console.error("[v0] Error sending confirmation email:", error)
+    console.error("[v0] ❌ Unexpected error sending confirmation email:")
+    console.error("[v0] Error type:", error instanceof Error ? error.name : typeof error)
+    console.error("[v0] Error message:", error instanceof Error ? error.message : String(error))
+    console.error("[v0] Full error:", error)
+
     const errorMessage = error instanceof Error ? error.message : String(error)
     return NextResponse.json({ error: "Failed to process email request", details: errorMessage }, { status: 500 })
   }
