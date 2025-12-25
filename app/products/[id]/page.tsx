@@ -20,7 +20,7 @@ function FooterSkeleton() {
   return <div className="h-32 bg-muted animate-pulse" />
 }
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+function ProductPageContent({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { addItem } = useCart()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist()
@@ -64,14 +64,15 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   if (!baseProduct || !selectedProduct) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <Suspense fallback={<HeaderSkeleton />}>
           <Header />
         </Suspense>
-        <div className="flex items-center justify-center py-24">
+        <div className="flex-1 flex items-center justify-center py-24">
           <div className="text-center">
             <h1 className="text-3xl font-light mb-4">Product Not Found</h1>
-            <Link href="/shop" className="text-accent hover:underline">
+            <p className="text-muted-foreground mb-6">Product ID: {productId}</p>
+            <Link href="/shop" className="text-accent hover:underline font-medium">
               Back to Shop
             </Link>
           </div>
@@ -126,13 +127,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header and Footer wrapped in Suspense boundaries to fix useSearchParams prerender error */}
       <Suspense fallback={<HeaderSkeleton />}>
         <Header />
       </Suspense>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Breadcrumb */}
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition mb-8"
@@ -142,7 +141,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
-          {/* Images */}
           <div>
             <div className="flex items-center justify-center mb-4">
               <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden group">
@@ -216,7 +214,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             )}
           </div>
 
-          {/* Info */}
           <div className="flex flex-col">
             <div className="mb-8">
               <p className="text-muted-foreground text-sm uppercase tracking-wide mb-4">{selectedProduct.category}</p>
@@ -282,7 +279,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <button
               type="button"
               onClick={handleAddToCart}
-              className={`py-4 px-8 rounded-lg font-medium text-lg transition mb-4 w-full bg-primary-foreground ${
+              className={`py-4 px-8 rounded-lg font-medium text-lg transition mb-4 w-full ${
                 isAdded ? "bg-green-600 text-white" : "bg-accent text-accent-foreground hover:opacity-90"
               }`}
             >
@@ -326,7 +323,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div>
             <h2 className="text-3xl font-light mb-8 text-pretty">Related Items</h2>
@@ -352,10 +348,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         )}
       </div>
 
-      {/* Footer wrapped in Suspense boundary */}
       <Suspense fallback={<FooterSkeleton />}>
         <Footer />
       </Suspense>
     </div>
   )
+}
+
+export default function ProductPage({ params }: { params: { id: string } }) {
+  return <ProductPageContent params={params} />
 }
