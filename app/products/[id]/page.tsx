@@ -1,8 +1,7 @@
 "use client"
 
-import { Suspense } from "react"
 import { useEffect, useMemo, useState } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import Header from "@/components/header"
@@ -12,28 +11,13 @@ import { useCart } from "@/hooks/use-cart"
 import { useWishlist } from "@/hooks/use-wishlist"
 import { ChevronLeft, Heart, Share2, ChevronRight } from "lucide-react"
 
-function HeaderSkeleton() {
-  return <div className="h-20 bg-muted animate-pulse" />
-}
-
-function FooterSkeleton() {
-  return <div className="h-32 bg-muted animate-pulse" />
-}
-
-export default function ProductPage() {
-  const params = useParams()
+export default function ProductPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { addItem } = useCart()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist()
 
-  const productId = useMemo(() => {
-    if (!params?.id) return Number.NaN
-    return Number.parseInt(String(params.id), 10)
-  }, [params?.id])
-
-  const baseProduct = useMemo(() => {
-    return PRODUCTS.find((p) => p.id === productId)
-  }, [productId])
+  const productId = Number.parseInt(params.id, 10)
+  const baseProduct = PRODUCTS.find((p) => p.id === productId)
 
   const [quantity, setQuantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
@@ -63,32 +47,25 @@ export default function ProductPage() {
   }, [selectedProduct])
 
   useEffect(() => {
-    if (productId && !isNaN(productId)) {
-      setSelectedVariantId(productId)
-      setSelectedImageIndex(0)
-      setQuantity(1)
-      window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior })
-    }
+    setSelectedVariantId(productId)
+    setSelectedImageIndex(0)
+    setQuantity(1)
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior })
   }, [productId])
 
-  if (!baseProduct || !selectedProduct || isNaN(productId)) {
+  if (!baseProduct || !selectedProduct) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Suspense fallback={<HeaderSkeleton />}>
-          <Header />
-        </Suspense>
-        <div className="flex-1 flex items-center justify-center py-24">
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center py-24">
           <div className="text-center">
             <h1 className="text-3xl font-light mb-4">Product Not Found</h1>
-            <p className="text-muted-foreground mb-6">Product ID: {productId}</p>
-            <Link href="/shop" className="text-accent hover:underline font-medium">
+            <Link href="/shop" className="text-accent hover:underline">
               Back to Shop
             </Link>
           </div>
         </div>
-        <Suspense fallback={<FooterSkeleton />}>
-          <Footer />
-        </Suspense>
+        <Footer />
       </div>
     )
   }
@@ -136,11 +113,10 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Suspense fallback={<HeaderSkeleton />}>
-        <Header />
-      </Suspense>
+      <Header />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Breadcrumb */}
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition mb-8"
@@ -150,6 +126,7 @@ export default function ProductPage() {
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+          {/* Images */}
           <div>
             <div className="flex items-center justify-center mb-4">
               <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden group">
@@ -223,6 +200,7 @@ export default function ProductPage() {
             )}
           </div>
 
+          {/* Info */}
           <div className="flex flex-col">
             <div className="mb-8">
               <p className="text-muted-foreground text-sm uppercase tracking-wide mb-4">{selectedProduct.category}</p>
@@ -288,7 +266,7 @@ export default function ProductPage() {
             <button
               type="button"
               onClick={handleAddToCart}
-              className={`py-4 px-8 rounded-lg font-medium text-lg transition mb-4 w-full ${
+              className={`py-4 px-8 rounded-lg font-medium text-lg transition mb-4 w-full bg-primary-foreground ${
                 isAdded ? "bg-green-600 text-white" : "bg-accent text-accent-foreground hover:opacity-90"
               }`}
             >
@@ -332,6 +310,7 @@ export default function ProductPage() {
           </div>
         </div>
 
+        {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div>
             <h2 className="text-3xl font-light mb-8 text-pretty">Related Items</h2>
@@ -357,9 +336,7 @@ export default function ProductPage() {
         )}
       </div>
 
-      <Suspense fallback={<FooterSkeleton />}>
-        <Footer />
-      </Suspense>
+      <Footer />
     </div>
   )
 }

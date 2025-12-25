@@ -9,11 +9,11 @@ import { useWishlist } from "@/hooks/use-wishlist"
 import { Heart, ArrowRight } from "lucide-react"
 
 function HeaderSkeleton() {
-  return <div className="h-20 bg-muted animate-pulse" />
+  return <div className="h-24 bg-[rgba(208,193,177,1)] border-b border-border animate-pulse" />
 }
 
 function FooterSkeleton() {
-  return <div className="h-32 bg-muted animate-pulse" />
+  return <div className="h-32 bg-[rgba(207,193,176,1)] animate-pulse mt-24" />
 }
 
 export default function WishlistPage() {
