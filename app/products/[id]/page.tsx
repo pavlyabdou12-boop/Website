@@ -88,6 +88,8 @@ function ProductContent() {
       price: selectedProduct.price,
       image: selectedProduct.image,
       size,
+      selectedSize: size,
+      color: selectedProduct.color,
       quantity,
     })
 
