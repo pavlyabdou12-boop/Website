@@ -589,32 +589,26 @@ export default function CheckoutPage() {
               {step === "payment" && (
                 <div>
                   <h2 className="text-2xl font-light mb-6">Payment Method</h2>
-                  <div className="space-y-4">
+                  <div className="flex gap-3">
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("instapay")}
-                      className={`w-full text-left px-4 py-3 rounded-lg border transition ${
-                        paymentMethod === "instapay" ? "border-accent bg-accent/10" : "border-border hover:bg-muted"
+                      className={`flex-1 py-3 px-4 rounded-lg border transition ${
+                        paymentMethod === "instapay"
+                          ? "bg-accent text-accent-foreground border-accent"
+                          : "border-border hover:bg-muted"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Instapay Wallet</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            01065161086{" "}
-                            <span className="block">(Please send a screenshot on WhatsApp to confirm your order)</span>
-                          </p>
-                        </div>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="font-medium">Instapay Wallet</span>
                         {paymentMethod === "instapay" && (
-                          <div className="ml-2 flex-shrink-0">
-                            <svg className="w-5 h-5 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </div>
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
                         )}
                       </div>
                     </button>
@@ -622,31 +616,43 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("cod")}
-                      className={`w-full text-left px-4 py-3 rounded-lg border transition ${
-                        paymentMethod === "cod" ? "border-accent bg-accent/10" : "border-border hover:bg-muted"
+                      className={`flex-1 py-3 px-4 rounded-lg border transition ${
+                        paymentMethod === "cod"
+                          ? "bg-accent text-accent-foreground border-accent"
+                          : "border-border hover:bg-muted"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Cash on Delivery</p>
-                          <p className="text-sm text-muted-foreground mt-1">Pay in cash when your order arrives.</p>
-                        </div>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="font-medium">Cash on Delivery</span>
                         {paymentMethod === "cod" && (
-                          <div className="ml-2 flex-shrink-0">
-                            <svg className="w-5 h-5 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </div>
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
                         )}
                       </div>
                     </button>
-
-                    {errors.paymentMethod && <p className="text-destructive text-sm mt-1">{errors.paymentMethod}</p>}
                   </div>
+
+                  {paymentMethod === "instapay" && (
+                    <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
+                      <p className="font-medium mb-1">Instapay Number: 01065161086</p>
+                      <p className="text-muted-foreground">
+                        Please send a screenshot on WhatsApp to confirm your order
+                      </p>
+                    </div>
+                  )}
+
+                  {paymentMethod === "cod" && (
+                    <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
+                      <p className="text-muted-foreground">Pay in cash when your order arrives</p>
+                    </div>
+                  )}
+
+                  {errors.paymentMethod && <p className="text-destructive text-sm mt-3">{errors.paymentMethod}</p>}
                 </div>
               )}
 
