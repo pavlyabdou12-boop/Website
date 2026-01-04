@@ -15,6 +15,7 @@ export async function POST(req: Request) {
     const {
       orderNumber,
       customerEmail,
+      email,
       customerFullName,
       customerPhone,
       deliveryAddress,
@@ -27,9 +28,12 @@ export async function POST(req: Request) {
     } = payload
 
     // -------- Validation --------
-    if (!orderNumber || !customerEmail || !items?.length) {
+    const resolvedEmail = customerEmail || email
+
+    if (!orderNumber || !resolvedEmail || !items?.length) {
       console.error("[v0] ❌ Email validation failed - missing required fields")
-      return NextResponse.json({ error: "Missing required email fields" }, { status: 400 })
+      console.error("[v0] Received payload:", { orderNumber, customerEmail, email, itemCount: items?.length })
+      return NextResponse.json({ error: "Missing email or orderNumber" }, { status: 400 })
     }
 
     if (!RESEND_API_KEY) {
@@ -102,7 +106,7 @@ export async function POST(req: Request) {
                   </tr>
                   <tr>
                     <td style="padding: 8px;"><strong>Email:</strong></td>
-                    <td style="padding: 8px;">${customerEmail}</td>
+                    <td style="padding: 8px;">${resolvedEmail}</td>
                   </tr>
                   <tr>
                     <td style="padding: 8px;"><strong>Phone:</strong></td>
@@ -185,11 +189,11 @@ export async function POST(req: Request) {
     `
 
     // -------- Send email to customer --------
-    console.log(`[v0] 📧 Sending confirmation email to: ${customerEmail}`)
+    console.log(`[v0] 📧 Sending confirmation email to: ${resolvedEmail}`)
 
     const { error, id } = await resend.emails.send({
       from: SENDER_EMAIL,
-      to: customerEmail,
+      to: resolvedEmail,
       subject: `Order Confirmed - #${orderNumber}`,
       html,
     })
@@ -207,7 +211,7 @@ export async function POST(req: Request) {
       )
     }
 
-    console.log(`[v0] ✅ Confirmation email sent successfully to ${customerEmail} (Resend ID: ${id})`)
+    console.log(`[v0] ✅ Confirmation email sent successfully to ${resolvedEmail} (Resend ID: ${id})`)
 
     return NextResponse.json(
       {
