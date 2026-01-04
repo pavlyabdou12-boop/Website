@@ -1,11 +1,10 @@
 "use client"
-
-import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Menu, X, ShoppingBag, Search, Instagram, Facebook, Heart } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { useWishlist } from "@/hooks/use-wishlist"
+import { HeaderSearch } from "./header-search"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -13,17 +12,15 @@ export default function Header() {
 
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
 
   const desktopSearchRef = useRef<HTMLInputElement | null>(null)
   const mobileSearchRef = useRef<HTMLInputElement | null>(null)
 
-  const initialSearch = searchParams.get("search") ?? ""
-  const [searchValue, setSearchValue] = useState(initialSearch)
+  const [searchValue, setSearchValue] = useState("")
 
-  useEffect(() => {
-    setSearchValue(initialSearch)
-  }, [initialSearch])
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value)
+  }
 
   const { getTotalItems, isLoaded } = useCart()
   const { getTotalItems: getWishlistItems, isLoaded: wishlistLoaded } = useWishlist()
@@ -63,16 +60,6 @@ export default function Header() {
     goToTopAfterNav()
   }
 
-  const handleSearchChange = (value: string) => {
-    setSearchValue(value)
-
-    const params = new URLSearchParams()
-    if (value.trim()) params.set("search", value)
-
-    const url = params.toString() ? `/shop?${params.toString()}` : "/shop"
-    router.push(url)
-  }
-
   // ✅ دوسة واحدة: يودّيك shop ويفتح search
   const toggleSearch = () => {
     setIsMenuOpen(false)
@@ -90,6 +77,8 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border">
+      <HeaderSearch onSearchChange={handleSearchChange} searchValue={searchValue} />
+
       <div className="max-w-7xl bg-[rgba(208,193,177,1)] leading-7 tracking-normal mx-px my-px px-4 py-6">
         <div className="flex items-center justify-between">
           {/* Logo - Home */}
@@ -110,7 +99,11 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <button type="button" onClick={() => handleNav("/")} className="hover:text-accent transition text-amber-950">
+            <button
+              type="button"
+              onClick={() => handleNav("/")}
+              className="hover:text-accent transition text-amber-950"
+            >
               Home
             </button>
             <button
@@ -154,11 +147,7 @@ export default function Header() {
                 aria-label="TikTok"
                 className="hover:opacity-80 transition"
               >
-                <img
-                  src="/images/design-mode/IMG_4771.PNG(2).png"
-                  alt="TikTok"
-                  className="h-5 w-5 text-amber-950"
-                />
+                <img src="/images/design-mode/IMG_4771.PNG(2).png" alt="TikTok" className="h-5 w-5 text-amber-950" />
               </a>
             </div>
           </nav>
@@ -241,16 +230,32 @@ export default function Header() {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className="md:hidden mt-4 space-y-3 pb-4 border-t border-border pt-4">
-            <button type="button" onClick={() => handleNav("/")} className="block text-left w-full text-foreground hover:text-accent transition">
+            <button
+              type="button"
+              onClick={() => handleNav("/")}
+              className="block text-left w-full text-foreground hover:text-accent transition"
+            >
               Home
             </button>
-            <button type="button" onClick={() => handleNav("/shop")} className="block text-left w-full text-foreground hover:text-accent transition">
+            <button
+              type="button"
+              onClick={() => handleNav("/shop")}
+              className="block text-left w-full text-foreground hover:text-accent transition"
+            >
               Shop All
             </button>
-            <button type="button" onClick={() => handleNav("/about")} className="block text-left w-full text-foreground hover:text-accent transition">
+            <button
+              type="button"
+              onClick={() => handleNav("/about")}
+              className="block text-left w-full text-foreground hover:text-accent transition"
+            >
               About
             </button>
-            <button type="button" onClick={() => handleNav("/wishlist")} className="block text-left w-full text-foreground hover:text-accent transition">
+            <button
+              type="button"
+              onClick={() => handleNav("/wishlist")}
+              className="block text-left w-full text-foreground hover:text-accent transition"
+            >
               Wishlist
             </button>
 
