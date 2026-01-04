@@ -248,10 +248,24 @@ export default function CheckoutPage() {
           }),
         })
 
-        const checkoutData = await checkoutResponse.json()
-
         if (!checkoutResponse.ok) {
-          console.error("[v0] Checkout API error:", checkoutData.error)
+          let errorMessage = "Checkout failed"
+          try {
+            const errorData = await checkoutResponse.json()
+            errorMessage = errorData.error || errorData.message || errorMessage
+          } catch {
+            errorMessage = `Server error (${checkoutResponse.status})`
+          }
+          console.error("[v0] Checkout API error:", errorMessage)
+          setIsSubmitting(false)
+          return
+        }
+
+        let checkoutData
+        try {
+          checkoutData = await checkoutResponse.json()
+        } catch (parseError) {
+          console.error("[v0] Failed to parse checkout response:", parseError)
           setIsSubmitting(false)
           return
         }
