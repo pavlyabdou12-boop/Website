@@ -2,48 +2,69 @@ import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import type { OrderPayload, OrderResponse } from "@/lib/types/order"
 
-// ================= ENV =================
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// ================= HELPERS =================
-// Generate 6-digit order number (e.g. 483921)
 function generateOrderNumber(): string {
   return String(Math.floor(100000 + Math.random() * 900000))
 }
 
-// ================= ROUTE =================
+function parseMoney(v: any): number {
+  if (v === null || v === undefined) return 0
+  if (typeof v === "number") return Number.isFinite(v) ? v : 0
+  const s = String(v).trim().replace(/[^\d.,-]/g, "")
+  if (s.includes(",") && s.includes(".")) return Number(s.replace(/,/g, "")) || 0
+  if (s.includes(",") && !s.includes(".")) return Number(s.replace(",", ".")) || 0
+  return Number(s) || 0
+}
+
 export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
   try {
-    // -------- Parse request --------
     const payload: OrderPayload = await req.json()
 
-    console.log("[v0] 📦 Order received:", {
+    console.log("[checkout] 📦 Order received:", {
       email: payload.customer?.email,
       itemCount: payload.items?.length,
-      total: payload.pricing?.total,
+      payloadTotal: payload.pricing?.total,
     })
 
-    // -------- Validation --------
-    if (!payload.customer?.email || !payload.items?.length || payload.pricing?.total === undefined) {
+    if (!payload.customer?.email || !payload.items?.length) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Missing required order information",
-          error: "Invalid payload",
-        },
+        { success: false, message: "Missing required order information", error: "Invalid payload" },
         { status: 400 },
       )
     }
 
-    // -------- Supabase client (SERVER ONLY) --------
     const supabase = createClient(SUPABASE_URL!, SERVICE_ROLE_KEY!, {
       auth: { persistSession: false },
     })
 
-    // -------- Generate short order number --------
     const orderNumber = generateOrderNumber()
-    console.log("[v0] 📝 Creating order:", orderNumber)
+    console.log("[checkout] 📝 Creating order:", orderNumber)
+
+    // ✅ normalize items (numbers)
+    const normalizedItems = payload.items.map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      quantity: Math.max(1, Math.floor(parseMoney(item.quantity))),
+      price: parseMoney(item.price),
+      variant: item.variant || { size: null, color: null },
+    }))
+
+    // ✅ compute totals server-side (source of truth)
+    const computedSubtotal = normalizedItems.reduce((sum, it) => sum + it.price * it.quantity, 0)
+    const computedDiscount = parseMoney(payload.pricing?.discount)
+    const computedShipping = parseMoney(payload.pricing?.shippingFee)
+    const computedTotal = Math.max(0, computedSubtotal - computedDiscount) + computedShipping
+
+    console.log("[checkout] ✅ computed totals:", {
+      computedSubtotal,
+      computedDiscount,
+      computedShipping,
+      computedTotal,
+      firstItem: normalizedItems[0]?.name,
+      firstItemPrice: normalizedItems[0]?.price,
+    })
 
     // -------- Insert order --------
     const { data: orderData, error: orderError } = await supabase
@@ -60,10 +81,10 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
           delivery_building: payload.address.building,
           delivery_apartment: payload.address.apartment || null,
           delivery_notes: payload.address.notes || null,
-          subtotal: payload.pricing.subtotal,
-          shipping_fee: payload.pricing.shippingFee,
-          discount: payload.pricing.discount,
-          total: payload.pricing.total,
+          subtotal: computedSubtotal,
+          shipping_fee: computedShipping,
+          discount: computedDiscount,
+          total: computedTotal,
           payment_method: payload.paymentMethod,
           status: "pending",
           source: "checkout",
@@ -75,22 +96,18 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
       .single()
 
     if (orderError) {
-      console.error("[v0] ❌ Failed to insert order:", orderError.message)
+      console.error("[checkout] ❌ Failed to insert order:", orderError.message)
       return NextResponse.json(
-        {
-          success: false,
-          message: "Failed to create order",
-          error: orderError.message,
-        },
+        { success: false, message: "Failed to create order", error: orderError.message },
         { status: 500 },
       )
     }
 
     const orderId = orderData.id
-    console.log("[v0] ✅ Order created:", orderId)
+    console.log("[checkout] ✅ Order created:", orderId)
 
     // -------- Insert order items --------
-    const orderItems = payload.items.map((item) => ({
+    const orderItems = normalizedItems.map((item: any) => ({
       order_id: orderId,
       product_id: item.id,
       product_name: item.name,
@@ -103,7 +120,7 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
     const { error: itemsError } = await supabase.from("order_items").insert(orderItems)
 
     if (itemsError) {
-      console.error("[v0] ❌ Failed to insert items:", itemsError.message)
+      console.error("[checkout] ❌ Failed to insert items:", itemsError.message)
       return NextResponse.json(
         {
           success: false,
@@ -116,99 +133,41 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
       )
     }
 
-    console.log("[v0] ✅ Order items saved")
+    console.log("[checkout] ✅ Order items saved")
 
-    // -------- Send confirmation email to customer (server-side, non-blocking) --------
+    // ✅ DB MODE: send only orderId to email route
     try {
-      console.log(`[checkout] HIT ✅ Creating confirmation email for order ${orderNumber}`)
+      const baseUrl =
+        process.env.APP_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
-      const computedSubtotal = payload.items.reduce(
-        (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0),
-        0,
-      )
-      const computedTotal =
-        Math.max(0, computedSubtotal - (payload.pricing.discount || 0)) + (payload.pricing.shippingFee || 0)
+      console.log("[checkout] 📧 Triggering email (DB MODE):", { baseUrl, orderId, orderNumber })
 
-      console.log(`[checkout] HIT ✅`, {
-        orderNumber,
-        computedSubtotal,
-        computedTotal,
-        payloadSubtotal: payload.pricing.subtotal,
-        payloadTotal: payload.pricing.total,
-        firstItem: payload.items[0]?.name,
+      const emailResponse = await fetch(`${baseUrl}/api/send-confirmation-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
       })
 
-      // Call the email API route with complete order details
-      const emailResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/send-confirmation-email`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderNumber,
-            customerEmail: payload.customer.email,
-            email: payload.customer.email,
-            customerFullName: `${payload.customer.firstName} ${payload.customer.lastName}`,
-            customerPhone: payload.customer.phone,
-            deliveryAddress: {
-              street: payload.address.street,
-              building: payload.address.building,
-              apartment: payload.address.apartment || null,
-              city: payload.address.city,
-              postalCode: payload.address.postalCode || null,
-              country: "Egypt",
-              notes: payload.address.notes || null,
-            },
-            items: payload.items.map((item) => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price,
-              variant: item.variant || { size: null, color: null },
-            })),
-            subtotal: computedSubtotal,
-            discount: payload.pricing.discount || 0,
-            shippingFee: payload.pricing.shippingFee || 0,
-            total: computedTotal,
-            paymentMethod: payload.paymentMethod,
-          }),
-        },
-      )
-
-      if (!emailResponse.ok) {
-        const emailError = await emailResponse.json().catch(() => ({}))
-        console.error("[v0] ⚠️ Email API returned non-OK status:", emailResponse.status, emailError)
-      } else {
-        const emailResult = await emailResponse.json()
-        console.log("[v0] ✅ Email API call succeeded:", emailResult)
-      }
+      const text = await emailResponse.text()
+      console.log("[checkout] 📧 email route response:", emailResponse.status, text)
     } catch (emailError) {
       console.error(
-        "[v0] ⚠️ Email sending failed (non-blocking):",
+        "[checkout] ⚠️ Email trigger failed (non-blocking):",
         emailError instanceof Error ? emailError.message : "Unknown error",
       )
     }
 
-    // -------- Success --------
     return NextResponse.json(
-      {
-        success: true,
-        orderId,
-        orderNumber,
-        message: "Order created successfully",
-      },
+      { success: true, orderId, orderNumber, message: "Order created successfully" },
       { status: 201 },
     )
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error"
-
-    console.error("[v0] ❌ Checkout error:", errorMessage)
+    console.error("[checkout] ❌ Checkout error:", errorMessage)
 
     return NextResponse.json(
-      {
-        success: false,
-        message: "Internal server error",
-        error: errorMessage,
-      },
+      { success: false, message: "Internal server error", error: errorMessage },
       { status: 500 },
     )
   }
