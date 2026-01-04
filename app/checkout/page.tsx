@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { Suspense, useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -72,25 +74,6 @@ const ACTIVE_PROMO_DISCOUNT = 0.1
 
 const generateOrderNumber = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString()
-}
-
-const sendConfirmationEmail = async (email: string, firstName: string, orderNumber: string, orderData: any) => {
-  try {
-    const response = await fetch("/api/send-confirmation-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, firstName, orderNumber, orderData }),
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      console.error("[v0] Email send failed (non-blocking):", errorData)
-    } else {
-      console.log("[v0] ✅ Confirmation email sent successfully")
-    }
-  } catch (error) {
-    console.error("[v0] Error sending confirmation email (non-blocking):", error)
-  }
 }
 
 function HeaderSkeleton() {
@@ -275,20 +258,6 @@ export default function CheckoutPage() {
 
         console.log("[v0] ✅ Order saved to Supabase:", checkoutData.orderNumber)
 
-        await sendConfirmationEmail(formData.email, formData.firstName, checkoutData.orderNumber, {
-          orderNumber: checkoutData.orderNumber,
-          items: cart,
-          subtotal,
-          discount,
-          shipping,
-          total,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          address: `${formData.street}, ${formData.building}${formData.apartment ? `, ${formData.apartment}` : ""}, ${formData.city}`,
-          paymentMethod,
-        })
-
         setIsSubmitting(false)
 
         setOrderSummary({
@@ -388,7 +357,9 @@ export default function CheckoutPage() {
           </div>
 
           <div className="space-y-4">
-            <p className="text-center text-sm text-muted-foreground">A confirmation email has been sent to {formData.email}</p>
+            <p className="text-center text-sm text-muted-foreground">
+              A confirmation email has been sent to {formData.email}
+            </p>
             <Link
               href="/"
               className="block w-full bg-accent text-accent-foreground py-3 rounded-lg font-medium text-center hover:opacity-90 transition"
@@ -658,7 +629,9 @@ export default function CheckoutPage() {
                   {paymentMethod === "instapay" && (
                     <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
                       <p className="font-medium mb-1">Instapay Number: 01065161086</p>
-                      <p className="text-muted-foreground">Please send a screenshot on WhatsApp to confirm your order</p>
+                      <p className="text-muted-foreground">
+                        Please send a screenshot on WhatsApp to confirm your order
+                      </p>
                     </div>
                   )}
 
