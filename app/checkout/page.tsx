@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState, useEffect } from "react"
+import { Suspense, useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -108,6 +108,7 @@ export default function CheckoutPage() {
   const { cart, getTotalPrice, clearCart, isLoaded } = useCart()
 
   const [step, setStep] = useState<CheckoutStep>("contact")
+  const checkoutFormRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -194,9 +195,15 @@ export default function CheckoutPage() {
   const handleNext = async () => {
     if (!validateStep(step)) return
 
-    if (step === "contact") setStep("address")
-    else if (step === "address") setStep("payment")
-    else if (step === "payment") {
+    if (step === "contact") {
+      setStep("address")
+      // Scroll to top of form after state updates
+      setTimeout(() => checkoutFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 0)
+    } else if (step === "address") {
+      setStep("payment")
+      // Scroll to top of form after state updates
+      setTimeout(() => checkoutFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 0)
+    } else if (step === "payment") {
       const subtotal = getTotalPrice()
       const discount = promoDiscount
       const subtotalAfter = Math.max(0, subtotal - discount)
@@ -285,6 +292,8 @@ export default function CheckoutPage() {
           discount,
           orderNumber: checkoutData.orderNumber,
         })
+
+        clearCart()
 
         setStep("confirmation")
       } catch (error) {
