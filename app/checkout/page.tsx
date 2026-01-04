@@ -597,11 +597,26 @@ export default function CheckoutPage() {
                         paymentMethod === "instapay" ? "border-accent bg-accent/10" : "border-border hover:bg-muted"
                       }`}
                     >
-                      <p className="font-medium">Instapay Wallet</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        01065161086{" "}
-                        <span className="block">(Please send a screenshot on WhatsApp to confirm your order)</span>
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Instapay Wallet</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            01065161086{" "}
+                            <span className="block">(Please send a screenshot on WhatsApp to confirm your order)</span>
+                          </p>
+                        </div>
+                        {paymentMethod === "instapay" && (
+                          <div className="ml-2 flex-shrink-0">
+                            <svg className="w-5 h-5 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
                     </button>
 
                     <button
@@ -611,8 +626,23 @@ export default function CheckoutPage() {
                         paymentMethod === "cod" ? "border-accent bg-accent/10" : "border-border hover:bg-muted"
                       }`}
                     >
-                      <p className="font-medium">Cash on Delivery</p>
-                      <p className="text-sm text-muted-foreground mt-1">Pay in cash when your order arrives.</p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Cash on Delivery</p>
+                          <p className="text-sm text-muted-foreground mt-1">Pay in cash when your order arrives.</p>
+                        </div>
+                        {paymentMethod === "cod" && (
+                          <div className="ml-2 flex-shrink-0">
+                            <svg className="w-5 h-5 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
                     </button>
 
                     {errors.paymentMethod && <p className="text-destructive text-sm mt-1">{errors.paymentMethod}</p>}
