@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -93,6 +93,14 @@ const sendConfirmationEmail = async (email: string, firstName: string, orderNumb
     console.error("[v0] Error sending confirmation email (non-blocking):", error)
     // Email errors shouldn't prevent order from completing
   }
+}
+
+function HeaderSkeleton() {
+  return <div className="h-20 bg-muted animate-pulse" />
+}
+
+function FooterSkeleton() {
+  return <div className="h-48 bg-muted animate-pulse" />
 }
 
 export default function CheckoutPage() {
@@ -247,7 +255,9 @@ export default function CheckoutPage() {
 
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Suspense fallback={<HeaderSkeleton />}>
+          <Header />
+        </Suspense>
         <div className="max-w-2xl mx-auto px-4 py-24">
           <div className="text-center mb-12">
             <CheckCircle2 size={64} className="text-accent mx-auto mb-6" />
@@ -317,15 +327,19 @@ export default function CheckoutPage() {
             </Link>
           </div>
         </div>
-        <Footer />
+        <Suspense fallback={<FooterSkeleton />}>
+          <Footer />
+        </Suspense>
       </div>
     )
   }
 
-  // Main steps UI (زي ما عندك) — أنا سايبها نفس أسلوبك مع fixes
+  // Main steps UI
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Suspense fallback={<HeaderSkeleton />}>
+        <Header />
+      </Suspense>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-light mb-12 text-pretty">Checkout</h1>
@@ -688,8 +702,9 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-
-      <Footer />
+      <Suspense fallback={<FooterSkeleton />}>
+        <Footer />
+      </Suspense>
     </div>
   )
 }
