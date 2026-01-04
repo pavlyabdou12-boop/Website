@@ -4,13 +4,29 @@ import { Resend } from "resend"
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const SENDER_EMAIL = "Sisies <onboarding@resend.dev>"
 
-function formatCurrency(amount: number): string {
-  return `EGP ${Number(amount).toFixed(2)}`
+function safeNumber(value: any): number {
+  const num = Number(value)
+  return isNaN(num) ? 0 : num
+}
+
+function formatCurrency(amount: any): string {
+  const safeAmount = safeNumber(amount)
+  return `EGP ${safeAmount.toFixed(2)}`
 }
 
 export async function POST(req: Request) {
   try {
     const payload = await req.json()
+
+    console.log("[v0] 📨 Email API received payload:", {
+      orderNumber: payload.orderNumber,
+      customerEmail: payload.customerEmail || payload.email,
+      itemCount: payload.items?.length,
+      subtotal: payload.subtotal,
+      discount: payload.discount,
+      shippingFee: payload.shippingFee,
+      total: payload.total,
+    })
 
     const {
       orderNumber,
@@ -27,12 +43,12 @@ export async function POST(req: Request) {
       paymentMethod,
     } = payload
 
-    // -------- Validation --------
     const resolvedEmail = customerEmail || email
 
     if (!orderNumber || !resolvedEmail || !items?.length) {
       console.error("[v0] ❌ Email validation failed - missing required fields")
-      console.error("[v0] Received payload:", { orderNumber, customerEmail, email, itemCount: items?.length })
+      console.error("[v0] Received payload keys:", Object.keys(payload))
+      console.error("[v0] Items received:", items?.length ?? 0)
       return NextResponse.json({ error: "Missing email or orderNumber" }, { status: 400 })
     }
 
@@ -43,175 +59,205 @@ export async function POST(req: Request) {
 
     const resend = new Resend(RESEND_API_KEY)
 
-    // -------- Build items table HTML --------
+    const safeSubtotal = safeNumber(subtotal)
+    const safeDiscount = safeNumber(discount)
+    const safeShippingFee = safeNumber(shippingFee)
+    const safeTotal = safeNumber(total)
+
+    console.log("[v0] 💰 Converted pricing values:", {
+      subtotal: safeSubtotal,
+      discount: safeDiscount,
+      shippingFee: safeShippingFee,
+      total: safeTotal,
+    })
+
     const itemsTableHTML = items
-      .map(
-        (item: any) => `
+      .map((item: any) => {
+        const itemPrice = safeNumber(item.price)
+        const itemQuantity = safeNumber(item.quantity)
+        const itemTotal = itemPrice * itemQuantity
+
+        return `
       <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name || "Unknown Product"}</td>
         <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
-          ${item.variant?.size || item.variant?.color ? `${item.variant.size || ""} ${item.variant.color || ""}`.trim() : "N/A"}
+          ${item.variant?.size || item.variant?.color ? `${item.variant.size || ""} ${item.variant.color || ""}`.trim() : "No variant"}
         </td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(item.price)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(item.price * item.quantity)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${itemQuantity}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(itemPrice)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(itemTotal)}</td>
       </tr>
-    `,
-      )
+    `
+      })
       .join("")
 
-    // -------- Build complete HTML email --------
     const html = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
-            .header { background-color: #c8a882; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-            .header h1 { margin: 0; font-size: 24px; }
-            .content { background-color: white; padding: 20px; }
-            .section { margin-bottom: 20px; }
-            .section-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 10px; border-bottom: 2px solid #c8a882; padding-bottom: 8px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-            table th { background-color: #f5f5f5; padding: 10px; text-align: left; font-weight: bold; border-bottom: 2px solid #ddd; }
-            .totals { background-color: #f9f9f9; padding: 15px; border-left: 4px solid #c8a882; margin: 15px 0; }
-            .total-row { display: flex; justify-content: space-between; padding: 8px 0; }
-            .total-row.grand { font-size: 18px; font-weight: bold; color: #c8a882; border-top: 2px solid #ddd; padding-top: 12px; }
-            .footer { background-color: #f5f5f5; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px; color: #666; }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; }
+            .wrapper { width: 100%; background-color: #f5f5f5; padding: 20px 0; }
+            .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+            .header { background: linear-gradient(135deg, #c8a882 0%, #b89968 100%); color: white; padding: 30px 20px; text-align: center; }
+            .header h1 { font-size: 28px; margin-bottom: 5px; font-weight: 600; }
+            .header p { font-size: 14px; opacity: 0.95; }
+            .content { padding: 30px 20px; }
+            .section { margin-bottom: 25px; }
+            .section-title { font-size: 16px; font-weight: 600; color: #2c2c2c; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #c8a882; }
+            table { width: 100%; border-collapse: collapse; }
+            table th { background-color: #f9f9f9; padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #e0e0e0; font-size: 13px; color: #555; }
+            table td { padding: 10px 12px; }
+            .info-table td { padding: 8px 0; }
+            .info-table td:first-child { font-weight: 600; color: #666; width: 40%; }
+            .info-table td:last-child { color: #333; }
+            .pricing-box { background-color: #fafafa; padding: 20px; border-left: 4px solid #c8a882; border-radius: 4px; margin: 20px 0; }
+            .pricing-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+            .pricing-row.subtotal { color: #666; }
+            .pricing-row.discount { color: #d9534f; }
+            .pricing-row.shipping { color: #666; }
+            .pricing-row.total { font-size: 16px; font-weight: 700; color: #c8a882; border-top: 1px solid #ddd; padding-top: 12px; margin-top: 8px; }
+            .payment-badge { display: inline-block; background-color: #e8f4f8; color: #0066cc; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 500; }
+            .footer-note { background-color: #f0f0f0; padding: 15px; border-radius: 4px; margin: 20px 0; font-size: 13px; color: #666; line-height: 1.6; }
+            .footer { background-color: #f9f9f9; padding: 20px; text-align: center; border-top: 1px solid #e0e0e0; font-size: 12px; color: #999; }
+            .footer p { margin: 4px 0; }
           </style>
         </head>
         <body>
-          <div class="container">
-            <div class="header">
-              <h1>Order Confirmed!</h1>
-              <p style="margin: 5px 0;">Thank you for your purchase, ${customerFullName}!</p>
-            </div>
-
-            <div class="content">
-              <!-- Order Number -->
-              <div class="section">
-                <div class="section-title">Order Number</div>
-                <p style="margin: 0; font-size: 18px; font-weight: bold; color: #c8a882;">#${orderNumber}</p>
+          <div class="wrapper">
+            <div class="container">
+              <!-- Header -->
+              <div class="header">
+                <h1>✓ Order Confirmed!</h1>
+                <p>Thank you for shopping with Sisies, ${customerFullName}!</p>
               </div>
 
-              <!-- Customer Details -->
-              <div class="section">
-                <div class="section-title">Customer Details</div>
-                <table>
-                  <tr>
-                    <td style="padding: 8px;"><strong>Name:</strong></td>
-                    <td style="padding: 8px;">${customerFullName}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px;"><strong>Email:</strong></td>
-                    <td style="padding: 8px;">${resolvedEmail}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px;"><strong>Phone:</strong></td>
-                    <td style="padding: 8px;">${customerPhone}</td>
-                  </tr>
-                </table>
-              </div>
+              <div class="content">
+                <!-- Order Number -->
+                <div class="section">
+                  <p style="font-size: 13px; color: #999; margin-bottom: 5px;">Order Reference:</p>
+                  <p style="font-size: 22px; font-weight: bold; color: #c8a882;">#${orderNumber}</p>
+                </div>
 
-              <!-- Delivery Address -->
-              <div class="section">
-                <div class="section-title">Delivery Address</div>
-                <p style="margin: 0; line-height: 1.8;">
-                  ${deliveryAddress.street}<br/>
-                  Building ${deliveryAddress.building}${deliveryAddress.apartment ? `, Apartment ${deliveryAddress.apartment}` : ""}<br/>
-                  ${deliveryAddress.city}${deliveryAddress.postalCode ? `, ${deliveryAddress.postalCode}` : ""}<br/>
-                  ${deliveryAddress.country || "Egypt"}<br/>
-                  ${deliveryAddress.notes ? `<br/><strong>Delivery Notes:</strong> ${deliveryAddress.notes}` : ""}
-                </p>
-              </div>
-
-              <!-- Payment Method -->
-              <div class="section">
-                <div class="section-title">Payment Method</div>
-                <p style="margin: 0;">
-                  <strong>${paymentMethod === "instapay" ? "Instapay Wallet" : "Cash on Delivery"}</strong>
-                </p>
-              </div>
-
-              <!-- Items -->
-              <div class="section">
-                <div class="section-title">Order Items</div>
-                <table>
-                  <thead>
+                <!-- Customer Details -->
+                <div class="section">
+                  <div class="section-title">Customer Information</div>
+                  <table class="info-table">
                     <tr>
-                      <th>Product</th>
-                      <th>Variant</th>
-                      <th>Quantity</th>
-                      <th>Unit Price</th>
-                      <th>Total</th>
+                      <td>Full Name:</td>
+                      <td>${customerFullName || "N/A"}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    ${itemsTableHTML}
-                  </tbody>
-                </table>
+                    <tr>
+                      <td>Email:</td>
+                      <td>${resolvedEmail}</td>
+                    </tr>
+                    <tr>
+                      <td>Phone:</td>
+                      <td>${customerPhone || "N/A"}</td>
+                    </tr>
+                  </table>
+                </div>
+
+                <!-- Delivery Address -->
+                <div class="section">
+                  <div class="section-title">Delivery Address</div>
+                  <p style="font-size: 14px; line-height: 1.8; color: #333;">
+                    ${deliveryAddress?.street || "N/A"}<br/>
+                    Building ${deliveryAddress?.building || "N/A"}${deliveryAddress?.apartment ? `, Apartment ${deliveryAddress.apartment}` : ""}<br/>
+                    ${deliveryAddress?.city || "N/A"}${deliveryAddress?.postalCode ? `, ${deliveryAddress.postalCode}` : ""}<br/>
+                    ${deliveryAddress?.country || "Egypt"}<br/>
+                    ${deliveryAddress?.notes ? `<br/><strong>Special Delivery Instructions:</strong><br/>${deliveryAddress.notes}` : ""}
+                  </p>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="section">
+                  <div class="section-title">Payment Method</div>
+                  <span class="payment-badge">
+                    ${paymentMethod === "instapay" ? "💳 Instapay Wallet" : "🏪 Cash on Delivery"}
+                  </span>
+                </div>
+
+                <!-- Order Items -->
+                <div class="section">
+                  <div class="section-title">Order Items (${items.length})</div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Product Name</th>
+                        <th>Variant</th>
+                        <th style="text-align: center;">Qty</th>
+                        <th style="text-align: right;">Unit Price</th>
+                        <th style="text-align: right;">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${itemsTableHTML}
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Pricing Summary -->
+                <div class="pricing-box">
+                  <div class="pricing-row subtotal">
+                    <span>Subtotal:</span>
+                    <span>${formatCurrency(safeSubtotal)}</span>
+                  </div>
+                  ${safeDiscount > 0 ? `<div class="pricing-row discount"><span>Discount Applied:</span><span>-${formatCurrency(safeDiscount)}</span></div>` : ""}
+                  <div class="pricing-row shipping">
+                    <span>Shipping Fee:</span>
+                    <span>${formatCurrency(safeShippingFee)}</span>
+                  </div>
+                  <div class="pricing-row total">
+                    <span>Total Amount:</span>
+                    <span>${formatCurrency(safeTotal)}</span>
+                  </div>
+                </div>
+
+                <!-- Footer Note -->
+                <div class="footer-note">
+                  <strong>What's Next?</strong><br/>
+                  Your order has been received and will be processed shortly. You'll receive a shipping confirmation email with tracking details. If you have any questions, reply to this email or contact our support team.
+                </div>
               </div>
 
-              <!-- Pricing Summary -->
-              <div class="totals">
-                <div class="total-row">
-                  <span>Subtotal:</span>
-                  <span>${formatCurrency(subtotal)}</span>
-                </div>
-                ${discount > 0 ? `<div class="total-row"><span>Discount:</span><span>-${formatCurrency(discount)}</span></div>` : ""}
-                <div class="total-row">
-                  <span>Shipping Fee:</span>
-                  <span>${formatCurrency(shippingFee)}</span>
-                </div>
-                <div class="total-row grand">
-                  <span>Total Amount Due:</span>
-                  <span>${formatCurrency(total)}</span>
-                </div>
+              <!-- Footer -->
+              <div class="footer">
+                <p><strong>Sisies</strong> | Modern Ladies Fashion</p>
+                <p>© 2025 Sisies Boutique. All rights reserved.</p>
+                <p style="margin-top: 10px;">Thank you for choosing us! 💝</p>
               </div>
-
-              <!-- Footer Note -->
-              <div style="background-color: #f0f0f0; padding: 12px; border-radius: 4px; margin-top: 15px;">
-                <p style="margin: 0; font-size: 13px; color: #555;">
-                  If you have any questions, please reply to this email or contact our customer support.
-                </p>
-              </div>
-            </div>
-
-            <div class="footer">
-              <p style="margin: 0;">© 2025 Sisies | Modern Ladies Fashion</p>
-              <p style="margin: 5px 0;">Thank you for shopping with us!</p>
             </div>
           </div>
         </body>
       </html>
     `
 
-    // -------- Send email to customer --------
     console.log(`[v0] 📧 Sending confirmation email to: ${resolvedEmail}`)
 
     const { error, id } = await resend.emails.send({
       from: SENDER_EMAIL,
       to: resolvedEmail,
-      subject: `Order Confirmed - #${orderNumber}`,
+      subject: `Order Confirmed - #${orderNumber} | Sisies`,
       html,
     })
 
     if (error) {
       console.error(`[v0] ❌ Email send failed for order ${orderNumber}:`, error)
-      // Return success anyway - order is already saved to database
       return NextResponse.json(
         {
           success: true,
-          warning: "Order saved but email sending encountered an issue. We will contact you soon.",
+          warning: "Order saved but email notification encountered an issue",
           orderNumber,
         },
         { status: 200 },
       )
     }
 
-    console.log(`[v0] ✅ Confirmation email sent successfully to ${resolvedEmail} (Resend ID: ${id})`)
+    console.log(`[v0] ✅ Confirmation email sent to ${resolvedEmail} (ID: ${id})`)
 
     return NextResponse.json(
       {
@@ -224,13 +270,12 @@ export async function POST(req: Request) {
     )
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error"
-    console.error(`[v0] ❌ Unexpected error in email route:`, errorMessage)
+    console.error(`[v0] ❌ Email route error:`, errorMessage)
 
-    // Return success anyway - the order is already saved
     return NextResponse.json(
       {
         success: true,
-        warning: "Order saved but email notification failed. We will contact you.",
+        warning: "Order saved but email notification failed",
       },
       { status: 200 },
     )
