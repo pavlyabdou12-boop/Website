@@ -96,6 +96,7 @@ export async function POST(req: Request) {
             .price-row.total { font-size: 18px; font-weight: bold; color: #c8a882; border-top: 1px solid #ddd; padding-top: 12px; margin-top: 8px; }
             .badge { display: inline-block; background-color: #e8f4f8; color: #0066cc; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 500; }
             .footer { background-color: #f9f9f9; padding: 20px; text-align: center; border-top: 1px solid #e0e0e0; font-size: 12px; color: #999; }
+            .admin-note { background-color: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 12px; color: #856404; }
           </style>
         </head>
         <body>
@@ -103,10 +104,14 @@ export async function POST(req: Request) {
             <div class="container">
               <div class="header">
                 <h1>✓ Order Confirmed!</h1>
-                <p>Thank you for shopping with Sisies, ${customerFullName}</p>
+                <p>New Order Received - Order #${orderNumber}</p>
               </div>
 
               <div class="content">
+                <div class="admin-note">
+                  <strong>Admin Notification:</strong> This is an order confirmation sent to admin. Customer email: <strong>${customerEmail}</strong>
+                </div>
+
                 <div class="section">
                   <p style="font-size: 13px; color: #999; margin: 0 0 5px 0;">Order Reference:</p>
                   <p style="font-size: 22px; font-weight: bold; color: #c8a882; margin: 0;">#${orderNumber}</p>
@@ -186,15 +191,15 @@ export async function POST(req: Request) {
                 </div>
 
                 <div style="background-color: #f0f0f0; padding: 15px; border-radius: 4px; margin: 20px 0; font-size: 13px; color: #666;">
-                  <strong>What's Next?</strong><br/>
-                  Your order has been received and will be processed shortly. You'll receive a shipping confirmation email with tracking details soon.
+                  <strong>Action Required:</strong><br/>
+                  Review this order and prepare for fulfillment. Process payment confirmation and arrange shipment accordingly.
                 </div>
               </div>
 
               <div class="footer">
-                <p><strong>Sisies</strong> | Modern Ladies Fashion</p>
+                <p><strong>Sisies Admin Portal</strong> | Order Management System</p>
                 <p>© 2025 Sisies Boutique. All rights reserved.</p>
-                <p style="margin-top: 10px;">Thank you for choosing us! 💝</p>
+                <p style="margin-top: 10px;">Order #${orderNumber} awaits your attention.</p>
               </div>
             </div>
           </div>
@@ -202,12 +207,13 @@ export async function POST(req: Request) {
       </html>
     `
 
-    console.log(`[v0] 📧 Sending email to: ${customerEmail}`)
+    const adminEmail = "sisies2025@gmail.com"
+    console.log(`[v0] 📧 Sending email to admin: ${adminEmail} (customer: ${customerEmail})`)
 
     const { error, id } = await resend.emails.send({
       from: SENDER_EMAIL,
-      to: customerEmail,
-      subject: `Order Confirmed - #${orderNumber} | Sisies`,
+      to: adminEmail,
+      subject: `Order Confirmed - #${orderNumber} | ${customerFullName}`,
       html,
     })
 
@@ -216,7 +222,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, warning: "Order saved but email failed", orderNumber }, { status: 200 })
     }
 
-    console.log(`[v0] ✅ Email sent successfully (ID: ${id})`)
+    console.log(`[v0] ✅ Email sent successfully to admin (ID: ${id})`)
 
     return NextResponse.json({ success: true, orderNumber, emailId: id }, { status: 200 })
   } catch (error) {
