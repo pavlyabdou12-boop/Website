@@ -120,20 +120,22 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
 
     // -------- Send confirmation email to customer (server-side, non-blocking) --------
     try {
-      console.log(`[v0] 📧 Triggering confirmation email for order ${orderNumber}`)
+      console.log(`[checkout] HIT ✅ Creating confirmation email for order ${orderNumber}`)
 
-      console.log("[v0] 📤 Email payload about to send:", {
+      const computedSubtotal = payload.items.reduce(
+        (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0),
+        0,
+      )
+      const computedTotal =
+        Math.max(0, computedSubtotal - (payload.pricing.discount || 0)) + (payload.pricing.shippingFee || 0)
+
+      console.log(`[checkout] HIT ✅`, {
         orderNumber,
-        customerEmail: payload.customer.email,
-        customerFullName: `${payload.customer.firstName} ${payload.customer.lastName}`,
-        itemCount: payload.items.length,
-        itemNames: payload.items.map((i) => i.name),
-        subtotal: payload.pricing.subtotal,
-        discount: payload.pricing.discount,
-        shippingFee: payload.pricing.shippingFee,
-        total: payload.pricing.total,
-        addressCity: payload.address.city,
-        paymentMethod: payload.paymentMethod,
+        computedSubtotal,
+        computedTotal,
+        payloadSubtotal: payload.pricing.subtotal,
+        payloadTotal: payload.pricing.total,
+        firstItem: payload.items[0]?.name,
       })
 
       // Call the email API route with complete order details
@@ -163,10 +165,10 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
               price: item.price,
               variant: item.variant || { size: null, color: null },
             })),
-            subtotal: payload.pricing.subtotal,
-            discount: payload.pricing.discount,
-            shippingFee: payload.pricing.shippingFee,
-            total: payload.pricing.total,
+            subtotal: computedSubtotal,
+            discount: payload.pricing.discount || 0,
+            shippingFee: payload.pricing.shippingFee || 0,
+            total: computedTotal,
             paymentMethod: payload.paymentMethod,
           }),
         },

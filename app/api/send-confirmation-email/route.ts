@@ -23,20 +23,27 @@ export async function POST(req: Request) {
     const customerFullName = payload.customerFullName || "Valued Customer"
     const customerPhone = payload.customerPhone || "N/A"
     const items = payload.items || []
-    const subtotal = payload.subtotal ?? 0
-    const discount = payload.discount ?? 0
-    const shippingFee = payload.shippingFee ?? 0
-    const total = payload.total ?? 0
+
+    let subtotal = Number(payload.subtotal) || 0
+    const discount = Number(payload.discount) || 0
+    const shippingFee = Number(payload.shippingFee) || 0
+    let total = Number(payload.total) || 0
+
+    // If all totals are 0 but items exist, compute from items
+    if ((subtotal === 0 || total === 0) && items.length > 0) {
+      subtotal = items.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0), 0)
+      total = Math.max(0, subtotal - discount) + shippingFee
+    }
+
     const paymentMethod = payload.paymentMethod || "Not specified"
     const deliveryAddress = payload.deliveryAddress || {}
 
-    console.log("[v0] 📨 Email API received:", {
+    console.log("[send-confirmation-email] HIT ✅", {
       orderNumber,
-      email: customerEmail,
-      itemCount: items.length,
+      customerEmail,
       subtotal,
-      shippingFee,
       total,
+      firstItem: items[0]?.name,
     })
 
     if (!orderNumber || !customerEmail) {
@@ -103,7 +110,7 @@ export async function POST(req: Request) {
           <div class="wrapper">
             <div class="container">
               <div class="header">
-                <h1>✓ Order Confirmed!</h1>
+                <h1>✅ NEW ROUTE - Order Confirmed!</h1>
                 <p>New Order Received - Order #${orderNumber}</p>
               </div>
 
@@ -173,20 +180,20 @@ export async function POST(req: Request) {
                 <div class="pricing-box">
                   <div class="price-row">
                     <span>Subtotal:</span>
-                    <span style="font-weight: 600;">EGP ${Number(subtotal).toFixed(2)}</span>
+                    <span style="font-weight: 600;">EGP ${subtotal.toFixed(2)}</span>
                   </div>
                   ${
-                    Number(discount) > 0
-                      ? `<div class="price-row"><span>Discount:</span><span style="color: #d9534f;">-EGP ${Number(discount).toFixed(2)}</span></div>`
+                    discount > 0
+                      ? `<div class="price-row"><span>Discount:</span><span style="color: #d9534f;">-EGP ${discount.toFixed(2)}</span></div>`
                       : ""
                   }
                   <div class="price-row">
                     <span>Shipping:</span>
-                    <span style="font-weight: 600;">EGP ${Number(shippingFee).toFixed(2)}</span>
+                    <span style="font-weight: 600;">EGP ${shippingFee.toFixed(2)}</span>
                   </div>
                   <div class="price-row total">
                     <span>Total Amount:</span>
-                    <span>EGP ${Number(total).toFixed(2)}</span>
+                    <span>EGP ${total.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -208,12 +215,12 @@ export async function POST(req: Request) {
     `
 
     const adminEmail = "sisies2025@gmail.com"
-    console.log(`[v0] 📧 Sending email to admin: ${adminEmail} (customer: ${customerEmail})`)
+    console.log(`[v0] 📧 Sending email to admin: ${adminEmail}`)
 
     const { error, id } = await resend.emails.send({
       from: SENDER_EMAIL,
       to: adminEmail,
-      subject: `Order Confirmed - #${orderNumber} | ${customerFullName}`,
+      subject: `✅ NEW ROUTE - Order Confirmed #${orderNumber} | ${customerFullName}`,
       html,
     })
 
