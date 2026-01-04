@@ -133,8 +133,9 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            orderNumber,
-            customerEmail: payload.customer.email,
+            orderNumber, // ensure this is passed
+            customerEmail: payload.customer.email, // match the email API expectations
+            email: payload.customer.email, // backup field name
             customerFullName: `${payload.customer.firstName} ${payload.customer.lastName}`,
             customerPhone: payload.customer.phone,
             deliveryAddress: {
@@ -146,7 +147,12 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
               country: "Egypt",
               notes: payload.address.notes || null,
             },
-            items: payload.items,
+            items: payload.items.map((item) => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+              variant: item.variant || { size: null, color: null },
+            })),
             subtotal: payload.pricing.subtotal,
             discount: payload.pricing.discount,
             shippingFee: payload.pricing.shippingFee,
