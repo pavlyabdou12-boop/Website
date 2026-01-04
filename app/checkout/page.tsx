@@ -85,13 +85,11 @@ const sendConfirmationEmail = async (email: string, firstName: string, orderNumb
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       console.error("[v0] Email send failed (non-blocking):", errorData)
-      // Email failure shouldn't prevent order completion
     } else {
       console.log("[v0] ✅ Confirmation email sent successfully")
     }
   } catch (error) {
     console.error("[v0] Error sending confirmation email (non-blocking):", error)
-    // Email errors shouldn't prevent order from completing
   }
 }
 
@@ -108,7 +106,11 @@ export default function CheckoutPage() {
   const { cart, getTotalPrice, clearCart, isLoaded } = useCart()
 
   const [step, setStep] = useState<CheckoutStep>("contact")
-  const checkoutFormRef = useRef<HTMLDivElement>(null)
+
+  // ✅ refs للسكرول (تعديل بسيط)
+  const addressTopRef = useRef<HTMLDivElement>(null)
+  const paymentTopRef = useRef<HTMLDivElement>(null)
+
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -192,17 +194,25 @@ export default function CheckoutPage() {
     }
   }
 
+  // ✅ function للسكرول (تعديل بسيط)
+  const scrollToRef = (ref: React.RefObject<HTMLDivElement>) => {
+    // نخليها بعد تحديث الـ DOM
+    setTimeout(() => {
+      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 0)
+  }
+
   const handleNext = async () => {
     if (!validateStep(step)) return
 
     if (step === "contact") {
       setStep("address")
-      // Scroll to top of form after state updates
-      setTimeout(() => checkoutFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 0)
+      // ✅ scroll لأعلى address
+      scrollToRef(addressTopRef)
     } else if (step === "address") {
       setStep("payment")
-      // Scroll to top of form after state updates
-      setTimeout(() => checkoutFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 0)
+      // ✅ scroll لأعلى payment
+      scrollToRef(paymentTopRef)
     } else if (step === "payment") {
       const subtotal = getTotalPrice()
       const discount = promoDiscount
@@ -265,7 +275,6 @@ export default function CheckoutPage() {
 
         console.log("[v0] ✅ Order saved to Supabase:", checkoutData.orderNumber)
 
-        // Send confirmation email
         await sendConfirmationEmail(formData.email, formData.firstName, checkoutData.orderNumber, {
           orderNumber: checkoutData.orderNumber,
           items: cart,
@@ -294,7 +303,6 @@ export default function CheckoutPage() {
         })
 
         clearCart()
-
         setStep("confirmation")
       } catch (error) {
         console.error("[v0] Checkout error:", error)
@@ -321,6 +329,7 @@ export default function CheckoutPage() {
         <Suspense fallback={<HeaderSkeleton />}>
           <Header />
         </Suspense>
+
         <div className="max-w-2xl mx-auto px-4 py-24">
           <div className="text-center mb-12">
             <CheckCircle2 size={64} className="text-accent mx-auto mb-6" />
@@ -379,9 +388,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className="space-y-4">
-            <p className="text-center text-sm text-muted-foreground">
-              A confirmation email has been sent to {formData.email}
-            </p>
+            <p className="text-center text-sm text-muted-foreground">A confirmation email has been sent to {formData.email}</p>
             <Link
               href="/"
               className="block w-full bg-accent text-accent-foreground py-3 rounded-lg font-medium text-center hover:opacity-90 transition"
@@ -390,6 +397,7 @@ export default function CheckoutPage() {
             </Link>
           </div>
         </div>
+
         <Suspense fallback={<FooterSkeleton />}>
           <Footer />
         </Suspense>
@@ -397,7 +405,6 @@ export default function CheckoutPage() {
     )
   }
 
-  // Main steps UI
   return (
     <div className="min-h-screen bg-background">
       <Suspense fallback={<HeaderSkeleton />}>
@@ -427,7 +434,6 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Form */}
           <div className="lg:col-span-2">
             <form
               onSubmit={(e) => {
@@ -510,7 +516,8 @@ export default function CheckoutPage() {
 
               {/* Address */}
               {step === "address" && (
-                <div>
+                // ✅ ده اللي بيخلي السكرول يقف عند أول Address
+                <div ref={addressTopRef} className="scroll-mt-28">
                   <h2 className="text-2xl font-light mb-6">Delivery Address</h2>
                   <div className="space-y-4">
                     <div>
@@ -596,8 +603,10 @@ export default function CheckoutPage() {
 
               {/* Payment */}
               {step === "payment" && (
-                <div>
+                // ✅ ده اللي بيخلي السكرول يقف عند أول Payment
+                <div ref={paymentTopRef} className="scroll-mt-28">
                   <h2 className="text-2xl font-light mb-6">Payment Method</h2>
+
                   <div className="flex gap-3">
                     <button
                       type="button"
@@ -649,9 +658,7 @@ export default function CheckoutPage() {
                   {paymentMethod === "instapay" && (
                     <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
                       <p className="font-medium mb-1">Instapay Number: 01065161086</p>
-                      <p className="text-muted-foreground">
-                        Please send a screenshot on WhatsApp to confirm your order
-                      </p>
+                      <p className="text-muted-foreground">Please send a screenshot on WhatsApp to confirm your order</p>
                     </div>
                   )}
 
@@ -801,6 +808,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
       <Suspense fallback={<FooterSkeleton />}>
         <Footer />
       </Suspense>
