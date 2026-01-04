@@ -122,6 +122,20 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
     try {
       console.log(`[v0] 📧 Triggering confirmation email for order ${orderNumber}`)
 
+      console.log("[v0] 📤 Email payload about to send:", {
+        orderNumber,
+        customerEmail: payload.customer.email,
+        customerFullName: `${payload.customer.firstName} ${payload.customer.lastName}`,
+        itemCount: payload.items.length,
+        itemNames: payload.items.map((i) => i.name),
+        subtotal: payload.pricing.subtotal,
+        discount: payload.pricing.discount,
+        shippingFee: payload.pricing.shippingFee,
+        total: payload.pricing.total,
+        addressCity: payload.address.city,
+        paymentMethod: payload.paymentMethod,
+      })
+
       // Call the email API route with complete order details
       const emailResponse = await fetch(
         `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/send-confirmation-email`,
@@ -129,9 +143,9 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            orderNumber, // ensure this is passed
-            customerEmail: payload.customer.email, // match the email API expectations
-            email: payload.customer.email, // backup field name
+            orderNumber,
+            customerEmail: payload.customer.email,
+            email: payload.customer.email,
             customerFullName: `${payload.customer.firstName} ${payload.customer.lastName}`,
             customerPhone: payload.customer.phone,
             deliveryAddress: {
@@ -160,14 +174,12 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
 
       if (!emailResponse.ok) {
         const emailError = await emailResponse.json().catch(() => ({}))
-        console.error("[v0] ⚠️ Email API returned non-OK status:", emailError)
-        // Don't fail checkout - email is nice-to-have
+        console.error("[v0] ⚠️ Email API returned non-OK status:", emailResponse.status, emailError)
       } else {
         const emailResult = await emailResponse.json()
         console.log("[v0] ✅ Email API call succeeded:", emailResult)
       }
     } catch (emailError) {
-      // Log but don't fail - order is already saved
       console.error(
         "[v0] ⚠️ Email sending failed (non-blocking):",
         emailError instanceof Error ? emailError.message : "Unknown error",
