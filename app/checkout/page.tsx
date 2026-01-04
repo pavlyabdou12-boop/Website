@@ -205,38 +205,92 @@ export default function CheckoutPage() {
       const newOrderNumber = generateOrderNumber()
 
       setIsSubmitting(true)
-      await new Promise((r) => setTimeout(r, 800))
 
-      await sendConfirmationEmail(formData.email, formData.firstName, newOrderNumber, {
-        orderNumber: newOrderNumber,
-        items: cart,
-        subtotal,
-        discount,
-        shipping,
-        total,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        address: `${formData.street}, ${formData.building}${formData.apartment ? `, ${formData.apartment}` : ""}, ${formData.city}`,
-        paymentMethod,
-      })
+      try {
+        const checkoutResponse = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customer: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              phone: formData.phone,
+              subscribeToOffers: subscribeOffers,
+            },
+            address: {
+              street: formData.street,
+              building: formData.building,
+              apartment: formData.apartment || undefined,
+              city: formData.city,
+              postalCode: formData.postalCode || undefined,
+              notes: formData.deliveryNotes || undefined,
+            },
+            items: cart.map((item) => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.image,
+              variant: {
+                size: item.selectedSize,
+                color: item.color,
+              },
+            })),
+            pricing: {
+              subtotal,
+              discount,
+              shippingFee: shipping,
+              total,
+            },
+            paymentMethod,
+            shippingRegion,
+          }),
+        })
 
-      setIsSubmitting(false)
+        const checkoutData = await checkoutResponse.json()
 
-      setOrderSummary({
-        subtotal,
-        shipping,
-        total,
-        shippingRegion,
-        paymentMethod: paymentMethod!,
-        promoCode: appliedPromo ?? undefined,
-        discount,
-        orderNumber: newOrderNumber,
-      })
+        if (!checkoutResponse.ok) {
+          console.error("[v0] Checkout API error:", checkoutData.error)
+          setIsSubmitting(false)
+          return
+        }
 
-      clearCart()
-      setStep("confirmation")
-      requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior }))
+        console.log("[v0] ✅ Order saved to Supabase:", checkoutData.orderNumber)
+
+        // Send confirmation email
+        await sendConfirmationEmail(formData.email, formData.firstName, checkoutData.orderNumber, {
+          orderNumber: checkoutData.orderNumber,
+          items: cart,
+          subtotal,
+          discount,
+          shipping,
+          total,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          address: `${formData.street}, ${formData.building}${formData.apartment ? `, ${formData.apartment}` : ""}, ${formData.city}`,
+          paymentMethod,
+        })
+
+        setIsSubmitting(false)
+
+        setOrderSummary({
+          subtotal,
+          shipping,
+          total,
+          shippingRegion,
+          paymentMethod,
+          promoCode: appliedPromo || undefined,
+          discount,
+          orderNumber: checkoutData.orderNumber,
+        })
+
+        setStep("confirmation")
+      } catch (error) {
+        console.error("[v0] Checkout error:", error)
+        setIsSubmitting(false)
+      }
     }
   }
 
