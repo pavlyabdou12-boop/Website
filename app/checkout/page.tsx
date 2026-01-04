@@ -10,9 +10,33 @@ import { useCart } from "@/hooks/use-cart"
 import { CheckCircle2, ChevronRight } from "lucide-react"
 
 const EGYPTIAN_CITIES = [
-  "Cairo","Giza","Alexandria","Aswan","Asyut","Beheira","Beni Suef","Dakahlia","Damietta","Faiyum","Gharbia","Ismailia",
-  "Kafr El Sheikh","Luxor","Matruh","Minya","Monufia","New Valley","North Sinai","Port Said","Qalyubia","Qena","Red Sea",
-  "Sharqia","Sohag","South Sinai","Suez",
+  "Cairo",
+  "Giza",
+  "Alexandria",
+  "Aswan",
+  "Asyut",
+  "Beheira",
+  "Beni Suef",
+  "Dakahlia",
+  "Damietta",
+  "Faiyum",
+  "Gharbia",
+  "Ismailia",
+  "Kafr El Sheikh",
+  "Luxor",
+  "Matruh",
+  "Minya",
+  "Monufia",
+  "New Valley",
+  "North Sinai",
+  "Port Said",
+  "Qalyubia",
+  "Qena",
+  "Red Sea",
+  "Sharqia",
+  "Sohag",
+  "South Sinai",
+  "Suez",
 ].sort()
 
 type CheckoutStep = "contact" | "address" | "payment" | "confirmation"
@@ -57,9 +81,17 @@ const sendConfirmationEmail = async (email: string, firstName: string, orderNumb
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, firstName, orderNumber, orderData }),
     })
-    if (!response.ok) console.error("Failed to send confirmation email")
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error("[v0] Email send failed (non-blocking):", errorData)
+      // Email failure shouldn't prevent order completion
+    } else {
+      console.log("[v0] ✅ Confirmation email sent successfully")
+    }
   } catch (error) {
-    console.error("Error sending confirmation email:", error)
+    console.error("[v0] Error sending confirmation email (non-blocking):", error)
+    // Email errors shouldn't prevent order from completing
   }
 }
 
@@ -274,7 +306,9 @@ export default function CheckoutPage() {
           </div>
 
           <div className="space-y-4">
-            <p className="text-center text-sm text-muted-foreground">A confirmation email has been sent to {formData.email}</p>
+            <p className="text-center text-sm text-muted-foreground">
+              A confirmation email has been sent to {formData.email}
+            </p>
             <Link
               href="/"
               className="block w-full bg-accent text-accent-foreground py-3 rounded-lg font-medium text-center hover:opacity-90 transition"
@@ -497,7 +531,8 @@ export default function CheckoutPage() {
                     >
                       <p className="font-medium">Instapay Wallet</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        01065161086 <span className="block">(Please send a screenshot on WhatsApp to confirm your order)</span>
+                        01065161086{" "}
+                        <span className="block">(Please send a screenshot on WhatsApp to confirm your order)</span>
                       </p>
                     </button>
 
@@ -532,7 +567,9 @@ export default function CheckoutPage() {
                   type="submit"
                   disabled={isSubmitting}
                   className={`flex-1 py-3 px-6 rounded-lg font-medium transition ${
-                    isSubmitting ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-accent text-accent-foreground hover:opacity-90"
+                    isSubmitting
+                      ? "bg-muted text-muted-foreground cursor-not-allowed"
+                      : "bg-accent text-accent-foreground hover:opacity-90"
                   }`}
                 >
                   {isSubmitting ? "Processing..." : step === "payment" ? "Place Order" : "Next"}
@@ -553,7 +590,9 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setShippingRegion("cairo-giza")}
                     className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition ${
-                      shippingRegion === "cairo-giza" ? "bg-accent text-accent-foreground border-accent" : "border-border hover:bg-muted"
+                      shippingRegion === "cairo-giza"
+                        ? "bg-accent text-accent-foreground border-accent"
+                        : "border-border hover:bg-muted"
                     }`}
                   >
                     Cairo / Giza
@@ -562,7 +601,9 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setShippingRegion("other")}
                     className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition ${
-                      shippingRegion === "other" ? "bg-accent text-accent-foreground border-accent" : "border-border hover:bg-muted"
+                      shippingRegion === "other"
+                        ? "bg-accent text-accent-foreground border-accent"
+                        : "border-border hover:bg-muted"
                     }`}
                   >
                     Other Governorates
