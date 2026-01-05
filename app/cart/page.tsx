@@ -79,7 +79,10 @@ export default function CartPage() {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-6">
             {cart.map((item) => (
-              <div key={`${item.id}-${item.size}`} className="flex gap-6 bg-muted/50 p-4 rounded-lg">
+              <div
+                key={`${item.id}-${item.size || item.selectedSize}`}
+                className="flex gap-6 bg-muted/50 p-4 rounded-lg"
+              >
                 {/* Product Image */}
                 <Link
                   href={`/products/${item.id}`}
@@ -95,12 +98,12 @@ export default function CartPage() {
                       <Link href={`/products/${item.id}`}>
                         <h3 className="text-lg font-medium hover:text-accent transition">{item.name}</h3>
                       </Link>
-                      <p className="text-sm text-muted-foreground">{item.size}</p>
+                      <p className="text-sm text-muted-foreground">{item.size || item.selectedSize}</p>
                     </div>
 
                     <button
                       type="button"
-                      onClick={() => removeItem(item.id, item.size)}
+                      onClick={() => removeItem(item.id, item.size || item.selectedSize || "", item.color)}
                       className="text-muted-foreground hover:text-destructive transition p-2"
                       aria-label="Remove item"
                     >
@@ -113,7 +116,9 @@ export default function CartPage() {
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.size || item.selectedSize || "", item.quantity - 1, item.color)
+                        }
                         className="w-8 h-8 flex items-center justify-center border border-border rounded hover:bg-background transition"
                         aria-label="Decrease quantity"
                       >
@@ -122,7 +127,9 @@ export default function CartPage() {
                       <span className="font-medium w-8 text-center">{item.quantity}</span>
                       <button
                         type="button"
-                        onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.size || item.selectedSize || "", item.quantity + 1, item.color)
+                        }
                         className="w-8 h-8 flex items-center justify-center border border-border rounded hover:bg-background transition"
                         aria-label="Increase quantity"
                       >
