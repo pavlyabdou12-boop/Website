@@ -270,6 +270,12 @@ export default function CheckoutPage() {
           return
         }
 
+        if (!checkoutData.orderId || !checkoutData.orderNumber) {
+          console.error("[v0] Checkout API error: Missing orderId or orderNumber", checkoutData)
+          setIsSubmitting(false)
+          return
+        }
+
         console.log("[v0] ✅ Order saved to Supabase:", checkoutData.orderNumber)
 
         setIsSubmitting(false)
