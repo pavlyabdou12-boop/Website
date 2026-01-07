@@ -44,6 +44,20 @@ export default function Header() {
     return () => clearTimeout(t)
   }, [isSearchOpen, pathname])
 
+  useEffect(() => {
+    if (!isSearchOpen) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && searchValue.trim()) {
+        performSearch()
+      }
+    }
+
+    const activeInput = window.innerWidth >= 768 ? desktopSearchRef.current : mobileSearchRef.current
+    activeInput?.addEventListener("keydown", handleKeyDown)
+    return () => activeInput?.removeEventListener("keydown", handleKeyDown)
+  }, [isSearchOpen, searchValue, pathname])
+
   const goToTopAfterNav = () => {
     // بعد الـ route change، ننزل للأعلى
     requestAnimationFrame(() => {
@@ -73,6 +87,15 @@ export default function Header() {
 
     // لو بالفعل في /shop: افتح/اقفل
     setIsSearchOpen((prev) => !prev)
+  }
+
+  const performSearch = () => {
+    if (!searchValue.trim()) return
+
+    setIsSearchOpen(false)
+    setIsMenuOpen(false)
+    router.push(`/shop?search=${encodeURIComponent(searchValue)}`)
+    goToTopAfterNav()
   }
 
   return (
@@ -161,6 +184,9 @@ export default function Header() {
                 type="text"
                 value={searchValue}
                 onChange={(e) => handleSearchChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") performSearch()
+                }}
                 placeholder="Search products..."
                 className="hidden md:block bg-background border border-border px-3 py-1 rounded text-sm w-64"
               />
@@ -221,6 +247,9 @@ export default function Header() {
               type="text"
               value={searchValue}
               onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") performSearch()
+              }}
               placeholder="Search products..."
               className="w-full bg-background border border-border px-3 py-2 rounded text-sm"
             />
