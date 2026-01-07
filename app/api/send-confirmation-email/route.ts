@@ -11,7 +11,9 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 function parseMoney(v: any): number {
   if (v === null || v === undefined) return 0
   if (typeof v === "number") return Number.isFinite(v) ? v : 0
-  const s = String(v).trim().replace(/[^\d.,-]/g, "")
+  const s = String(v)
+    .trim()
+    .replace(/[^\d.,-]/g, "")
   if (s.includes(",") && s.includes(".")) return Number(s.replace(/,/g, "")) || 0
   if (s.includes(",") && !s.includes(".")) return Number(s.replace(",", ".")) || 0
   return Number(s) || 0
@@ -146,7 +148,7 @@ export async function POST(req: Request) {
           <div class="wrapper">
             <div class="container">
               <div class="header">
-                <h1>✅ DB MODE ✅ Order Confirmed!</h1>
+                <h1>✅ Order Confirmed!</h1>
                 <p>New Order Received - Order #${orderNumber}</p>
               </div>
 
@@ -169,7 +171,7 @@ export async function POST(req: Request) {
                     ${deliveryAddress.street || "N/A"}<br/>
                     Building ${deliveryAddress.building || "N/A"}${deliveryAddress.apartment ? `, Apt ${deliveryAddress.apartment}` : ""}<br/>
                     ${deliveryAddress.city || "N/A"}, Egypt<br/>
-                    ${deliveryAddress.notes ? `<br/><strong>Special Instructions:</strong> ${deliveryAddress.notes}` : "" }
+                    ${deliveryAddress.notes ? `<br/><strong>Special Instructions:</strong> ${deliveryAddress.notes}` : ""}
                   </p>
                 </div>
 
@@ -217,18 +219,27 @@ export async function POST(req: Request) {
 
     const adminEmail = "sisies2025@gmail.com"
 
+    console.log("[send-confirmation-email] 📧 Email payload prepared:", {
+      orderNumber,
+      customerEmail,
+      subtotal: formatCurrency(subtotal),
+      total: formatCurrency(total),
+      itemsCount: items?.length,
+    })
+
     const { error, id } = await resend.emails.send({
       from: SENDER_EMAIL,
       to: adminEmail,
-      subject: `✅ DB MODE ✅ Order Confirmed #${orderNumber} | ${customerFullName}`,
+      subject: `✅ Order Confirmed #${orderNumber} | ${customerFullName}`,
       html,
     })
 
     if (error) {
-      console.error("[send-confirmation-email] ❌ send failed:", error)
-      return NextResponse.json({ success: false, error }, { status: 500 })
+      console.error("[send-confirmation-email] ❌ Resend API error:", JSON.stringify(error, null, 2))
+      return NextResponse.json({ success: false, error: JSON.stringify(error) }, { status: 500 })
     }
 
+    console.log("[send-confirmation-email] ✅ Email sent successfully:", { id, orderNumber, to: adminEmail })
     return NextResponse.json({ success: true, orderId, orderNumber, emailId: id }, { status: 200 })
   } catch (error) {
     console.error("[send-confirmation-email] ❌ fatal:", error instanceof Error ? error.message : error)

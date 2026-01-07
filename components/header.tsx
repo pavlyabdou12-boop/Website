@@ -94,7 +94,9 @@ export default function Header() {
 
     setIsSearchOpen(false)
     setIsMenuOpen(false)
+    console.log("[v0] 🔍 Performing search:", searchValue)
     router.push(`/shop?search=${encodeURIComponent(searchValue)}`)
+    setSearchValue("")
     goToTopAfterNav()
   }
 
