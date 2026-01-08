@@ -2,18 +2,20 @@ import { NextResponse } from "next/server"
 import { Resend } from "resend"
 import { createClient } from "@supabase/supabase-js"
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY
-const SENDER_EMAIL = "Sisies <onboarding@resend.dev>"
+export const runtime = "nodejs"
 
+const RESEND_API_KEY = process.env.RESEND_API_KEY
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "sisies2025@gmail.com"
+// لازم ده يكون Sender موثّق عند Resend (Domain أو Single Sender)
+const SENDER_EMAIL = process.env.RESEND_FROM || "Sisies <onboarding@resend.dev>"
 
 function parseMoney(v: any): number {
   if (v === null || v === undefined) return 0
   if (typeof v === "number") return Number.isFinite(v) ? v : 0
-  const s = String(v)
-    .trim()
-    .replace(/[^\d.,-]/g, "")
+  const s = String(v).trim().replace(/[^\d.,-]/g, "")
   if (s.includes(",") && s.includes(".")) return Number(s.replace(/,/g, "")) || 0
   if (s.includes(",") && !s.includes(".")) return Number(s.replace(",", ".")) || 0
   return Number(s) || 0
@@ -25,26 +27,24 @@ function formatCurrency(v: any) {
 
 export async function POST(req: Request) {
   try {
-    const payload = await req.json()
-    const orderId = payload.orderId
+    const { orderId } = await req.json()
 
     if (!orderId) {
       return NextResponse.json({ success: false, error: "Missing orderId" }, { status: 400 })
     }
-
     if (!RESEND_API_KEY) {
-      console.error("[send-confirmation-email] ❌ RESEND_API_KEY not configured")
-      return NextResponse.json({ success: false, error: "Email service not configured" }, { status: 500 })
+      console.error("[send-confirmation-email] ❌ RESEND_API_KEY missing")
+      return NextResponse.json({ success: false, error: "RESEND_API_KEY missing" }, { status: 500 })
     }
-
     if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-      console.error("[send-confirmation-email] ❌ Missing Supabase env vars")
-      return NextResponse.json({ success: false, error: "Database not configured" }, { status: 500 })
+      console.error("[send-confirmation-email] ❌ Supabase env vars missing")
+      return NextResponse.json({ success: false, error: "Supabase env missing" }, { status: 500 })
     }
 
-    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } })
+    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+      auth: { persistSession: false },
+    })
 
-    // ✅ Get order
     const { data: order, error: orderErr } = await supabase
       .from("orders")
       .select(
@@ -58,7 +58,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 })
     }
 
-    // ✅ Get items
     const { data: items, error: itemsErr } = await supabase
       .from("order_items")
       .select("product_name, variant_size, variant_color, quantity, unit_price")
@@ -88,16 +87,6 @@ export async function POST(req: Request) {
       notes: order.delivery_notes,
     }
 
-    console.log("[send-confirmation-email] HIT ✅ DB MODE", {
-      orderId,
-      orderNumber,
-      customerEmail,
-      subtotal,
-      shippingFee,
-      total,
-      itemsCount: items?.length ?? 0,
-    })
-
     const itemsTableHTML =
       (items?.length ?? 0) > 0
         ? items!
@@ -120,6 +109,7 @@ export async function POST(req: Request) {
             .join("")
         : `<tr><td colspan="5" style="padding: 12px; text-align: center; color: #999;">No items in order</td></tr>`
 
+    // ✅ HTML بتاعك (نفسه)
     const html = `
       <!DOCTYPE html>
       <html>
@@ -217,32 +207,28 @@ export async function POST(req: Request) {
 
     const resend = new Resend(RESEND_API_KEY)
 
-    const adminEmail = "sisies2025@gmail.com"
-
-    console.log("[send-confirmation-email] 📧 Email payload prepared:", {
+    console.log("[send-confirmation-email] 📧 sending via Resend:", {
+      from: SENDER_EMAIL,
+      to: ADMIN_EMAIL,
       orderNumber,
-      customerEmail,
-      subtotal: formatCurrency(subtotal),
-      total: formatCurrency(total),
-      itemsCount: items?.length,
     })
 
-    const { error, id } = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: SENDER_EMAIL,
-      to: adminEmail,
+      to: ADMIN_EMAIL,
       subject: `✅ Order Confirmed #${orderNumber} | ${customerFullName}`,
       html,
     })
 
     if (error) {
-      console.error("[send-confirmation-email] ❌ Resend API error:", JSON.stringify(error, null, 2))
-      return NextResponse.json({ success: false, error: JSON.stringify(error) }, { status: 500 })
+      console.error("[send-confirmation-email] ❌ Resend error:", error)
+      return NextResponse.json({ success: false, error }, { status: 500 })
     }
 
-    console.log("[send-confirmation-email] ✅ Email sent successfully:", { id, orderNumber, to: adminEmail })
-    return NextResponse.json({ success: true, orderId, orderNumber, emailId: id }, { status: 200 })
-  } catch (error) {
-    console.error("[send-confirmation-email] ❌ fatal:", error instanceof Error ? error.message : error)
-    return NextResponse.json({ success: false, error: "Internal error" }, { status: 500 })
+    console.log("[send-confirmation-email] ✅ Sent:", { id: data?.id })
+    return NextResponse.json({ success: true, emailId: data?.id, orderNumber }, { status: 200 })
+  } catch (e: any) {
+    console.error("[send-confirmation-email] ❌ fatal:", e?.message || e)
+    return NextResponse.json({ success: false, error: e?.message || "Internal error" }, { status: 500 })
   }
 }
