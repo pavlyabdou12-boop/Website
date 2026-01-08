@@ -9,7 +9,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "sisies2025@gmail.com"
-const SENDER_EMAIL = process.env.RESEND_FROM || "Sisies Boutique <sisies2025@gmail.com>"
+const SENDER_EMAIL = process.env.RESEND_FROM || "sisies2025@gmail.com"
 
 function parseMoney(v: any): number {
   if (v === null || v === undefined) return 0
@@ -110,7 +110,7 @@ export async function POST(req: Request) {
             .join("")
         : `<tr><td colspan="5" style="padding: 12px; text-align: center; color: #999;">No items in order</td></tr>`
 
-    // ✅ HTML بتاعك (نفسه)
+    // HTML بتاعك (نفسه)
     const html = `
       <!DOCTYPE html>
       <html>
