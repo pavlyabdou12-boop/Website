@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import type { OrderPayload, OrderResponse } from "@/lib/types/order"
 
-// ✅ مهم جدًا على Vercel
 export const runtime = "nodejs"
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -27,15 +26,15 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
 
     if (!payload.customer?.email || !payload.items?.length) {
       return NextResponse.json(
-        { success: false, message: "Invalid order payload" },
+        { success: false, message: "Missing required order information", error: "Invalid payload" },
         { status: 400 },
       )
     }
 
     if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-      console.error("[checkout] ❌ Supabase env vars missing")
+      console.error("[checkout] ❌ Missing Supabase env vars")
       return NextResponse.json(
-        { success: false, message: "Server configuration error" },
+        { success: false, message: "Server configuration error", error: "Missing env vars" },
         { status: 500 },
       )
     }
@@ -56,10 +55,7 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
     }))
 
     // ✅ compute totals server-side
-    const subtotal = normalizedItems.reduce(
-      (sum, it) => sum + it.price * it.quantity,
-      0,
-    )
+    const subtotal = normalizedItems.reduce((sum, it) => sum + it.price * it.quantity, 0)
     const discount = parseMoney(payload.pricing?.discount)
     const shippingFee = parseMoney(payload.pricing?.shippingFee)
     const total = Math.max(0, subtotal - discount) + shippingFee
@@ -96,7 +92,7 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
     if (orderError || !order) {
       console.error("[checkout] ❌ Order insert failed:", orderError?.message)
       return NextResponse.json(
-        { success: false, message: "Failed to create order" },
+        { success: false, message: "Failed to create order", error: orderError?.message || "Unknown" },
         { status: 500 },
       )
     }
@@ -114,16 +110,15 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
       unit_price: item.price,
     }))
 
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems)
+    const { error: itemsError } = await supabase.from("order_items").insert(orderItems)
 
     if (itemsError) {
-      console.error("[checkout] ❌ Order items insert failed:", itemsError.message)
+      console.error("[checkout] ❌ Items insert failed:", itemsError.message)
       return NextResponse.json(
         {
           success: false,
           message: "Order created but items failed",
+          error: itemsError.message,
           orderId,
           orderNumber,
         },
@@ -131,35 +126,43 @@ export async function POST(req: Request): Promise<NextResponse<OrderResponse>> {
       )
     }
 
-    // -------- Trigger confirmation email (non-blocking) --------
-    try {
-      const emailUrl = new URL("/api/send-confirmation-email", req.url)
+    // -------- Trigger confirmation email (non-blocking + no cache + timeout) --------
+    ;(async () => {
+      const controller = new AbortController()
+      const t = setTimeout(() => controller.abort(), 8000)
 
-      const emailRes = await fetch(emailUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId }),
-      })
+      try {
+        const emailUrl = new URL("/api/send-confirmation-email", req.url)
 
-      const text = await emailRes.text()
-      console.log("[checkout] 📧 email response:", emailRes.status, text)
-    } catch (e) {
-      console.error("[checkout] ⚠️ Email trigger failed:", e)
-    }
+        const emailRes = await fetch(emailUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId }),
+          cache: "no-store",
+          signal: controller.signal,
+        })
+
+        const text = await emailRes.text()
+        console.log("[checkout] 📧 email response:", {
+          ok: emailRes.ok,
+          status: emailRes.status,
+          body: text?.slice?.(0, 500),
+        })
+      } catch (e: any) {
+        console.error("[checkout] ⚠️ Email trigger failed:", e?.message || e)
+      } finally {
+        clearTimeout(t)
+      }
+    })().catch(() => {})
 
     return NextResponse.json(
-      {
-        success: true,
-        orderId,
-        orderNumber,
-        message: "Order created successfully",
-      },
+      { success: true, orderId, orderNumber, message: "Order created successfully" },
       { status: 201 },
     )
   } catch (error: any) {
     console.error("[checkout] ❌ Fatal error:", error?.message || error)
     return NextResponse.json(
-      { success: false, message: "Internal server error" },
+      { success: false, message: "Internal server error", error: error?.message || "Unknown" },
       { status: 500 },
     )
   }

@@ -9,14 +9,25 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "sisies2025@gmail.com"
-const SENDER_EMAIL = process.env.RESEND_FROM || "sisies2025@gmail.com"
+
+// ✅ validate "from" format
+function normalizeFrom(raw?: string) {
+  const v = (raw || "").trim()
+
+  const ok =
+    /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(v) ||
+    /^.+\s<[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+>$/.test(v)
+
+  return ok ? v : null
+}
+
+const RESEND_FROM =
+  normalizeFrom(process.env.RESEND_FROM) || "Sisies <onboarding@resend.dev>"
 
 function parseMoney(v: any): number {
   if (v === null || v === undefined) return 0
   if (typeof v === "number") return Number.isFinite(v) ? v : 0
-  const s = String(v)
-    .trim()
-    .replace(/[^\d.,-]/g, "")
+  const s = String(v).trim().replace(/[^\d.,-]/g, "")
   if (s.includes(",") && s.includes(".")) return Number(s.replace(/,/g, "")) || 0
   if (s.includes(",") && !s.includes(".")) return Number(s.replace(",", ".")) || 0
   return Number(s) || 0
@@ -28,17 +39,19 @@ function formatCurrency(v: any) {
 
 export async function POST(req: Request) {
   try {
-    const { orderId } = await req.json()
+    const { orderId } = await req.json().catch(() => ({}))
 
     if (!orderId) {
       return NextResponse.json({ success: false, error: "Missing orderId" }, { status: 400 })
     }
+
     if (!RESEND_API_KEY) {
       console.error("[send-confirmation-email] ❌ RESEND_API_KEY missing")
       return NextResponse.json({ success: false, error: "RESEND_API_KEY missing" }, { status: 500 })
     }
+
     if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-      console.error("[send-confirmation-email] ❌ Supabase env vars missing")
+      console.error("[send-confirmation-email] ❌ Supabase env missing")
       return NextResponse.json({ success: false, error: "Supabase env missing" }, { status: 500 })
     }
 
@@ -46,6 +59,7 @@ export async function POST(req: Request) {
       auth: { persistSession: false },
     })
 
+    // ✅ Get order
     const { data: order, error: orderErr } = await supabase
       .from("orders")
       .select(
@@ -59,6 +73,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 })
     }
 
+    // ✅ Get items
     const { data: items, error: itemsErr } = await supabase
       .from("order_items")
       .select("product_name, variant_size, variant_color, quantity, unit_price")
@@ -78,8 +93,8 @@ export async function POST(req: Request) {
     const discount = parseMoney(order.discount)
     const shippingFee = parseMoney(order.shipping_fee)
     const total = parseMoney(order.total)
-
     const paymentMethod = order.payment_method || "Not specified"
+
     const deliveryAddress = {
       street: order.delivery_street,
       building: order.delivery_building,
@@ -88,7 +103,8 @@ export async function POST(req: Request) {
       notes: order.delivery_notes,
     }
 
-    const itemsTableHTML =
+    // ✅ Build items table rows
+    const itemsRows =
       (items?.length ?? 0) > 0
         ? items!
             .map((it: any) => {
@@ -99,123 +115,133 @@ export async function POST(req: Request) {
 
               return `
                 <tr>
-                  <td style="padding: 12px; border-bottom: 1px solid #eee;">${it.product_name}</td>
-                  <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">${variant}</td>
-                  <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">${qty}</td>
-                  <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(unit)}</td>
-                  <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(lineTotal)}</td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;">${it.product_name}</td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;">${variant || "-"}</td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;">${qty}</td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;">${formatCurrency(unit)}</td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;">${formatCurrency(lineTotal)}</td>
                 </tr>
               `
             })
             .join("")
-        : `<tr><td colspan="5" style="padding: 12px; text-align: center; color: #999;">No items in order</td></tr>`
+        : `<tr><td colspan="5" style="padding:12px;text-align:center;color:#999;">No items in order</td></tr>`
 
-    // HTML بتاعك (نفسه)
+    // ✅ Beautiful email template (like your screenshot)
     const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-            .wrapper { width: 100%; background-color: #f5f5f5; padding: 20px 0; }
-            .container { max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-            .header { background: linear-gradient(135deg, #c8a882 0%, #b89968 100%); color: white; padding: 30px 20px; text-align: center; }
-            .header h1 { font-size: 28px; margin: 0; }
-            .content { padding: 30px 20px; }
-            .section { margin-bottom: 25px; }
-            .section-title { font-size: 16px; font-weight: bold; color: #2c2c2c; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #c8a882; }
-            table { width: 100%; border-collapse: collapse; }
-            .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-            .info-label { font-weight: 600; color: #666; }
-            .pricing-box { background-color: #fafafa; padding: 20px; border-left: 4px solid #c8a882; border-radius: 4px; margin: 20px 0; }
-            .price-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; }
-            .price-row.total { font-size: 18px; font-weight: bold; color: #c8a882; border-top: 1px solid #ddd; padding-top: 12px; margin-top: 8px; }
-            .badge { display: inline-block; background-color: #e8f4f8; color: #0066cc; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 500; }
-            .footer { background-color: #f9f9f9; padding: 20px; text-align: center; border-top: 1px solid #e0e0e0; font-size: 12px; color: #999; }
-          </style>
-        </head>
-        <body>
-          <div class="wrapper">
-            <div class="container">
-              <div class="header">
-                <h1>✅ Order Confirmed!</h1>
-                <p>New Order Received - Order #${orderNumber}</p>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Order Confirmed</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:20px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+
+          <tr>
+            <td style="background:#c8a882;padding:25px;text-align:center;color:#fff;">
+              <h1 style="margin:0;font-size:26px;">✅ Order Confirmed!</h1>
+              <p style="margin:8px 0 0;font-size:14px;">
+                New Order Received - Order #${orderNumber}
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:25px;color:#333;font-size:14px;line-height:1.6;">
+
+              <p style="color:#999;margin:0;">Order Reference</p>
+              <p style="font-size:22px;font-weight:bold;color:#c8a882;margin:4px 0 20px;">
+                #${orderNumber}
+              </p>
+
+              <h3 style="border-bottom:2px solid #c8a882;padding-bottom:6px;margin:0;">Customer Information</h3>
+              <p style="margin:10px 0 0;"><b>Name:</b> ${customerFullName}</p>
+              <p style="margin:6px 0 0;"><b>Email:</b> ${customerEmail}</p>
+              <p style="margin:6px 0 0;"><b>Phone:</b> ${customerPhone}</p>
+
+              <h3 style="border-bottom:2px solid #c8a882;padding-bottom:6px;margin:25px 0 0;">Delivery Address</h3>
+              <p style="margin:10px 0 0;">
+                ${deliveryAddress.street || "N/A"}<br/>
+                Building ${deliveryAddress.building || "N/A"}${deliveryAddress.apartment ? `, Apt ${deliveryAddress.apartment}` : ""}<br/>
+                ${deliveryAddress.city || "N/A"}, Egypt
+              </p>
+              ${
+                deliveryAddress.notes
+                  ? `<p style="margin:10px 0 0;"><b>Notes:</b> ${deliveryAddress.notes}</p>`
+                  : ""
+              }
+
+              <h3 style="border-bottom:2px solid #c8a882;padding-bottom:6px;margin:25px 0 0;">Payment Method</h3>
+              <div style="margin-top:10px;">
+                <span style="display:inline-block;background:#eef6ff;color:#1a73e8;padding:6px 12px;border-radius:6px;font-size:13px;">
+                  ${paymentMethod === "instapay" ? "💳 Instapay Wallet" : "💵 Cash on Delivery"}
+                </span>
               </div>
 
-              <div class="content">
-                <div class="section">
-                  <p style="font-size: 13px; color: #999; margin: 0 0 5px 0;">Order Reference:</p>
-                  <p style="font-size: 22px; font-weight: bold; color: #c8a882; margin: 0;">#${orderNumber}</p>
-                </div>
+              <h3 style="border-bottom:2px solid #c8a882;padding-bottom:6px;margin:30px 0 0;">
+                Order Items (${items?.length ?? 0})
+              </h3>
 
-                <div class="section">
-                  <div class="section-title">Customer Information</div>
-                  <div class="info-row"><span class="info-label">Name:</span><span>${customerFullName}</span></div>
-                  <div class="info-row"><span class="info-label">Email:</span><span>${customerEmail}</span></div>
-                  <div class="info-row"><span class="info-label">Phone:</span><span>${customerPhone}</span></div>
-                </div>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:10px;">
+                <thead>
+                  <tr style="background:#f9f9f9;">
+                    <th align="left" style="padding:10px;border-bottom:1px solid #ddd;">Product</th>
+                    <th align="center" style="padding:10px;border-bottom:1px solid #ddd;">Variant</th>
+                    <th align="center" style="padding:10px;border-bottom:1px solid #ddd;">Qty</th>
+                    <th align="right" style="padding:10px;border-bottom:1px solid #ddd;">Unit</th>
+                    <th align="right" style="padding:10px;border-bottom:1px solid #ddd;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsRows}
+                </tbody>
+              </table>
 
-                <div class="section">
-                  <div class="section-title">Delivery Address</div>
-                  <p style="font-size: 14px; line-height: 1.8; margin: 0;">
-                    ${deliveryAddress.street || "N/A"}<br/>
-                    Building ${deliveryAddress.building || "N/A"}${deliveryAddress.apartment ? `, Apt ${deliveryAddress.apartment}` : ""}<br/>
-                    ${deliveryAddress.city || "N/A"}, Egypt<br/>
-                    ${deliveryAddress.notes ? `<br/><strong>Special Instructions:</strong> ${deliveryAddress.notes}` : ""}
-                  </p>
-                </div>
-
-                <div class="section">
-                  <div class="section-title">Payment Method</div>
-                  <span class="badge">${paymentMethod === "instapay" ? "💳 Instapay Wallet" : "🏪 Cash on Delivery"}</span>
-                </div>
-
-                <div class="section">
-                  <div class="section-title">Order Items (${items?.length ?? 0})</div>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th style="text-align: left; padding: 12px; background-color: #f9f9f9; border-bottom: 2px solid #e0e0e0;">Product</th>
-                        <th style="text-align: center; padding: 12px; background-color: #f9f9f9; border-bottom: 2px solid #e0e0e0;">Variant</th>
-                        <th style="text-align: center; padding: 12px; background-color: #f9f9f9; border-bottom: 2px solid #e0e0e0;">Qty</th>
-                        <th style="text-align: right; padding: 12px; background-color: #f9f9f9; border-bottom: 2px solid #e0e0e0;">Unit Price</th>
-                        <th style="text-align: right; padding: 12px; background-color: #f9f9f9; border-bottom: 2px solid #e0e0e0;">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>${itemsTableHTML}</tbody>
-                  </table>
-                </div>
-
-                <div class="pricing-box">
-                  <div class="price-row"><span>Subtotal:</span><span style="font-weight: 600;">${formatCurrency(subtotal)}</span></div>
-                  ${discount > 0 ? `<div class="price-row"><span>Discount:</span><span style="color:#d9534f;">-${formatCurrency(discount)}</span></div>` : ""}
-                  <div class="price-row"><span>Shipping:</span><span style="font-weight: 600;">${formatCurrency(shippingFee)}</span></div>
-                  <div class="price-row total"><span>Total Amount:</span><span>${formatCurrency(total)}</span></div>
-                </div>
+              <div style="background:#fafafa;border-left:4px solid #c8a882;padding:15px;margin-top:25px;border-radius:6px;">
+                <p style="margin:6px 0;"><b>Subtotal:</b> ${formatCurrency(subtotal)}</p>
+                ${discount > 0 ? `<p style="margin:6px 0;color:#d9534f;"><b>Discount:</b> -${formatCurrency(discount)}</p>` : ""}
+                <p style="margin:6px 0;"><b>Shipping:</b> ${formatCurrency(shippingFee)}</p>
+                <p style="margin:10px 0 0;font-size:18px;font-weight:bold;color:#c8a882;">
+                  Total Amount: ${formatCurrency(total)}
+                </p>
               </div>
 
-              <div class="footer">
-                <p><strong>Sisies Admin Portal</strong> | Order Management System</p>
-                <p>© 2025 Sisies Boutique. All rights reserved.</p>
-                <p style="margin-top: 10px;">Order #${orderNumber} processed from DB.</p>
-              </div>
-            </div>
-          </div>
-        </body>
-      </html>
-    `
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background:#f9f9f9;padding:18px;text-align:center;font-size:12px;color:#999;">
+              <b>Sisies Admin Portal</b><br/>
+              © 2025 Sisies Boutique. All rights reserved.<br/>
+              Order #${orderNumber} processed from DB.
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`
 
     const resend = new Resend(RESEND_API_KEY)
 
-    console.log("[send-confirmation-email] 📧 sending via Resend:", {
-      from: SENDER_EMAIL,
+    console.log("[send-confirmation-email] 📧 sending:", {
+      from: RESEND_FROM,
       to: ADMIN_EMAIL,
       orderNumber,
     })
 
     const { data, error } = await resend.emails.send({
-      from: SENDER_EMAIL,
+      from: RESEND_FROM,
       to: ADMIN_EMAIL,
       subject: `✅ Order Confirmed #${orderNumber} | ${customerFullName}`,
       html,
@@ -226,7 +252,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error }, { status: 500 })
     }
 
-    console.log("[send-confirmation-email] ✅ Sent:", { id: data?.id })
+    console.log("[send-confirmation-email] ✅ Sent:", data?.id)
     return NextResponse.json({ success: true, emailId: data?.id, orderNumber }, { status: 200 })
   } catch (e: any) {
     console.error("[send-confirmation-email] ❌ fatal:", e?.message || e)
