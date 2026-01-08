@@ -9,13 +9,14 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "sisies2025@gmail.com"
-// لازم ده يكون Sender موثّق عند Resend (Domain أو Single Sender)
-const SENDER_EMAIL = process.env.RESEND_FROM || "Sisies <onboarding@resend.dev>"
+const SENDER_EMAIL = process.env.RESEND_FROM || "Sisies Boutique <sisies2025@gmail.com>"
 
 function parseMoney(v: any): number {
   if (v === null || v === undefined) return 0
   if (typeof v === "number") return Number.isFinite(v) ? v : 0
-  const s = String(v).trim().replace(/[^\d.,-]/g, "")
+  const s = String(v)
+    .trim()
+    .replace(/[^\d.,-]/g, "")
   if (s.includes(",") && s.includes(".")) return Number(s.replace(/,/g, "")) || 0
   if (s.includes(",") && !s.includes(".")) return Number(s.replace(",", ".")) || 0
   return Number(s) || 0
