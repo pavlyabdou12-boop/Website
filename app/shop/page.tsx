@@ -8,6 +8,21 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { PRODUCTS } from "@/lib/product-data"
 
+function getColorHex(color: string): string {
+  const colorMap: Record<string, string> = {
+    black: "#1a1a1a",
+    mint: "#98d4bb",
+    burgundy: "#722F37",
+    olive: "#556B2F",
+    beige: "#d4b896",
+    gray: "#808080",
+    brown: "#8B4513",
+    cream: "#FFFDD0",
+    creamy: "#F5F5DC",
+  }
+  return colorMap[color.toLowerCase()] || "#cccccc"
+}
+
 function ShopContent() {
   const [sortBy, setSortBy] = useState("featured")
   const searchParams = useSearchParams()
@@ -19,18 +34,19 @@ function ShopContent() {
   const rawSearch = searchParams.get("search") ?? ""
   const searchQuery = rawSearch.toLowerCase()
 
-  // For products with colorVariants, only show the first color variant in the shop list
   const uniqueProducts = useMemo(() => {
     const seenProductGroups = new Set<string>()
     return PRODUCTS.filter((product) => {
       // Skip the Midi Slip Dress (id: 8) from shop listing
       if (product.id === 8) return false
 
-      // If product has color variants, create a group key based on product name
+      // If product has color variants, create a group key based on product name (without color)
       if (product.colorVariants && product.colorVariants.length > 0) {
-        const groupKey = product.name
+        // Get base name without color
+        const baseName = product.name.replace(/Black |Mint |Burgundy |Olive |Beige /gi, "").trim()
+        const groupKey = baseName || product.name
         if (seenProductGroups.has(groupKey)) {
-          return false // Skip duplicate color variants
+          return false // Skip duplicate color variants - we'll show swatches instead
         }
         seenProductGroups.add(groupKey)
       }
@@ -105,24 +121,46 @@ function ShopContent() {
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <Link key={product.id} href={`/products/${product.id}`} className="group cursor-pointer">
-                  <div className="relative overflow-hidden bg-muted aspect-square mb-4 rounded-lg">
-                    <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition duration-300"
-                    />
-                    {product.isNewArrival && (
-                      <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-medium px-2 py-1 rounded">
-                        New
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-lg font-medium group-hover:text-accent transition">{product.name}</h3>
-                  <p className="text-muted-foreground text-sm capitalize mb-2">{product.color}</p>
+                <div key={product.id} className="group">
+                  <Link href={`/products/${product.id}`} className="cursor-pointer">
+                    <div className="relative overflow-hidden bg-muted aspect-square mb-4 rounded-lg">
+                      <Image
+                        src={product.image || "/placeholder.svg"}
+                        alt={product.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition duration-300"
+                      />
+                      {product.isNewArrival && (
+                        <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-medium px-2 py-1 rounded">
+                          New
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-lg font-medium group-hover:text-accent transition">{product.name}</h3>
+                  </Link>
+
+                  {product.colorVariants && product.colorVariants.length > 1 ? (
+                    <div className="flex items-center gap-2 mt-2 mb-2">
+                      {product.colorVariants.map((variant) => (
+                        <Link
+                          key={variant.productId}
+                          href={`/products/${variant.productId}`}
+                          className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 ${
+                            variant.productId === product.id
+                              ? "border-accent ring-2 ring-accent/30"
+                              : "border-border hover:border-accent"
+                          }`}
+                          style={{ backgroundColor: getColorHex(variant.color) }}
+                          title={variant.color.charAt(0).toUpperCase() + variant.color.slice(1)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm capitalize mb-2">{product.color}</p>
+                  )}
+
                   <p className="font-semibold">EGP {product.price}.00</p>
-                </Link>
+                </div>
               ))}
             </div>
           ) : (
@@ -140,22 +178,44 @@ function ShopContent() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {newArrivals.map((product) => (
-              <Link key={product.id} href={`/products/${product.id}`} className="group cursor-pointer">
-                <div className="relative overflow-hidden bg-muted aspect-square mb-4 rounded-lg">
-                  <Image
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition duration-300"
-                  />
-                  <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-medium px-2 py-1 rounded">
-                    New
-                  </span>
-                </div>
-                <h3 className="text-lg font-medium mb-2 group-hover:text-accent transition">{product.name}</h3>
-                <p className="text-muted-foreground text-sm capitalize mb-1">{product.color}</p>
+              <div key={product.id} className="group">
+                <Link href={`/products/${product.id}`} className="cursor-pointer">
+                  <div className="relative overflow-hidden bg-muted aspect-square mb-4 rounded-lg">
+                    <Image
+                      src={product.image || "/placeholder.svg"}
+                      alt={product.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition duration-300"
+                    />
+                    <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-medium px-2 py-1 rounded">
+                      New
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-medium mb-2 group-hover:text-accent transition">{product.name}</h3>
+                </Link>
+
+                {product.colorVariants && product.colorVariants.length > 1 ? (
+                  <div className="flex items-center gap-2 mb-1">
+                    {product.colorVariants.map((variant) => (
+                      <Link
+                        key={variant.productId}
+                        href={`/products/${variant.productId}`}
+                        className={`w-5 h-5 rounded-full border-2 transition-all hover:scale-110 ${
+                          variant.productId === product.id
+                            ? "border-accent ring-2 ring-accent/30"
+                            : "border-border hover:border-accent"
+                        }`}
+                        style={{ backgroundColor: getColorHex(variant.color) }}
+                        title={variant.color.charAt(0).toUpperCase() + variant.color.slice(1)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm capitalize mb-1">{product.color}</p>
+                )}
+
                 <p className="text-muted-foreground">EGP {product.price}.00</p>
-              </Link>
+              </div>
             ))}
           </div>
         </div>

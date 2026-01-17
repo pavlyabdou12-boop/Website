@@ -11,6 +11,7 @@ export const PRODUCTS = [
     colorVariants: [
       { color: "black", productId: 1 },
       { color: "mint", productId: 11 },
+      { color: "burgundy", productId: 12 },
     ],
     additionalImages: [
       "/images/black-20breeze-202.jpeg",
@@ -185,8 +186,38 @@ export const PRODUCTS = [
     colorVariants: [
       { color: "black", productId: 1 },
       { color: "mint", productId: 11 },
+      { color: "burgundy", productId: 12 },
     ],
-    additionalImages: ["/images/mint-breeze-2.jpeg"],
+    additionalImages: [
+      "/images/mint-breeze-2.jpeg",
+      "/images/mint-breeze-3.jpeg",
+      "/images/mint-breeze-4.jpeg",
+      "/images/mint-breeze-5.jpeg",
+      "/images/mint-breeze-6.jpeg",
+      "/images/mint-breeze-7.jpeg",
+    ],
+    isNewArrival: true,
+  },
+  {
+    id: 12,
+    name: "Burgundy Breeze",
+    category: "outerwear",
+    color: "burgundy",
+    price: 750,
+    image: "/images/burgundy-breeze-1.jpeg",
+    description: "Rich burgundy ribbed zip-up sweater for a bold, warm look",
+    sizes: ["One Size"],
+    colorVariants: [
+      { color: "black", productId: 1 },
+      { color: "mint", productId: 11 },
+      { color: "burgundy", productId: 12 },
+    ],
+    additionalImages: [
+      "/images/burgundy-breeze-2.jpeg",
+      "/images/burgundy-breeze-3.jpeg",
+      "/images/burgundy-breeze-4.jpeg",
+      "/images/burgundy-breeze-5.jpeg",
+    ],
     isNewArrival: true,
   },
 ]
