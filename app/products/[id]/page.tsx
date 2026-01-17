@@ -34,9 +34,20 @@ function ProductContent() {
 
   const colorVariants = useMemo(() => {
     if (!baseProduct) return []
-    return baseProduct.name === "Royal Cape" || baseProduct.name === "Wrapet jacket"
-      ? PRODUCTS.filter((p) => p.name === baseProduct.name)
-      : []
+    // Check if product has colorVariants defined in data
+    if ((baseProduct as any).colorVariants && (baseProduct as any).colorVariants.length > 0) {
+      return (baseProduct as any).colorVariants
+        .map((v: { color: string; productId: number }) => {
+          const variantProduct = PRODUCTS.find((p) => p.id === v.productId)
+          return variantProduct || null
+        })
+        .filter(Boolean)
+    }
+    // Fallback for Royal Cape and Wrapet jacket
+    if (baseProduct.name === "Royal Cape" || baseProduct.name === "Wrapet jacket") {
+      return PRODUCTS.filter((p) => p.name === baseProduct.name)
+    }
+    return []
   }, [baseProduct])
 
   const selectedProduct = useMemo(() => {
