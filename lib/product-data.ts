@@ -29,6 +29,10 @@ export const PRODUCTS = [
     image: "/sisies-royal-cape.jpg",
     description: "Elegant olive green cape with luxurious drape",
     sizes: ["One Size"],
+    colorVariants: [
+      { color: "olive", productId: 2 },
+      { color: "black", productId: 7 },
+    ],
     additionalImages: ["/images/olive-20royal-20cape-203.jpeg", "/images/olive-20royal-20cape-202-20.jpeg"],
   },
   {
@@ -116,6 +120,10 @@ export const PRODUCTS = [
     image: "/99.jpeg",
     description: "Luxurious black royal cape with elegant drape",
     sizes: ["One Size"],
+    colorVariants: [
+      { color: "olive", productId: 2 },
+      { color: "black", productId: 7 },
+    ],
     additionalImages: [
       "/images/black-20royal-20capr-202.jpeg",
       "/images/black-20royal-20cape-203.jpeg",
@@ -217,6 +225,7 @@ export const PRODUCTS = [
       "/images/burgundy-breeze-3.jpeg",
       "/images/burgundy-breeze-4.jpeg",
       "/images/burgundy-breeze-5.jpeg",
+      "/images/burgundy-breeze-size-chart.jpeg",
     ],
     isNewArrival: true,
   },

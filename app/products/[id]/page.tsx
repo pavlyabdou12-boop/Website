@@ -34,7 +34,6 @@ function ProductContent() {
 
   const colorVariants = useMemo(() => {
     if (!baseProduct) return []
-    // Check if product has colorVariants defined in data
     if ((baseProduct as any).colorVariants && (baseProduct as any).colorVariants.length > 0) {
       return (baseProduct as any).colorVariants
         .map((v: { color: string; productId: number }) => {
@@ -43,7 +42,6 @@ function ProductContent() {
         })
         .filter(Boolean)
     }
-    // Fallback for Royal Cape and Wrapet jacket
     if (baseProduct.name === "Royal Cape" || baseProduct.name === "Wrapet jacket") {
       return PRODUCTS.filter((p) => p.name === baseProduct.name)
     }
@@ -131,6 +129,30 @@ function ProductContent() {
 
   const handleNextImage = () => {
     setSelectedImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1))
+  }
+
+  const handleShare = async () => {
+    const productUrl = typeof window !== "undefined" ? `${window.location.origin}/products/${selectedProduct.id}` : ""
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: selectedProduct.name,
+          text: `${selectedProduct.description} - EGP ${selectedProduct.price}`,
+          url: productUrl,
+        })
+      } catch (err) {
+        // User cancelled or error occurred
+      }
+    } else {
+      // Fallback: copy link to clipboard
+      try {
+        await navigator.clipboard.writeText(productUrl)
+        alert("Product link copied to clipboard!")
+      } catch (err) {
+        // Clipboard API not available
+      }
+    }
   }
 
   return (
@@ -269,7 +291,7 @@ function ProductContent() {
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 className="px-4 py-2 border border-border rounded hover:bg-muted transition"
               >
-                −
+                -
               </button>
               <span className="text-lg font-medium w-8 text-center">{quantity}</span>
               <button
@@ -289,7 +311,7 @@ function ProductContent() {
               isAdded ? "bg-green-600 text-white" : "bg-accent text-accent-foreground hover:opacity-90"
             }`}
           >
-            {isAdded ? "✓ Added to Bag" : "Add to Bag"}
+            {isAdded ? "Added to Bag" : "Add to Bag"}
           </button>
 
           <div className="flex gap-4">
@@ -308,12 +330,7 @@ function ProductContent() {
 
             <button
               type="button"
-              onClick={() =>
-                navigator.share?.({
-                  title: selectedProduct.name,
-                  text: selectedProduct.description,
-                })
-              }
+              onClick={handleShare}
               className="flex-1 py-3 rounded-lg border-2 border-border font-medium transition hover:border-accent flex items-center justify-center gap-2"
             >
               <Share2 size={20} />
@@ -322,9 +339,9 @@ function ProductContent() {
           </div>
 
           <div className="mt-8 pt-8 border-t border-border space-y-4 text-sm text-muted-foreground">
-            <p>✓ Free shipping on orders over EGP 2500</p>
-            <p>✓ Local delivery available</p>
-            <p>✓ Exchange only</p>
+            <p>Free shipping on orders over EGP 2500</p>
+            <p>Local delivery available</p>
+            <p>Exchange only</p>
           </div>
         </div>
       </div>
