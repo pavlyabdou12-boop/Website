@@ -19,10 +19,27 @@ function ShopContent() {
   const rawSearch = searchParams.get("search") ?? ""
   const searchQuery = rawSearch.toLowerCase()
 
-  const allSisiesProducts = PRODUCTS.slice(0, 7)
+  // For products with colorVariants, only show the first color variant in the shop list
+  const uniqueProducts = useMemo(() => {
+    const seenProductGroups = new Set<string>()
+    return PRODUCTS.filter((product) => {
+      // Skip the Midi Slip Dress (id: 8) from shop listing
+      if (product.id === 8) return false
+
+      // If product has color variants, create a group key based on product name
+      if (product.colorVariants && product.colorVariants.length > 0) {
+        const groupKey = product.name
+        if (seenProductGroups.has(groupKey)) {
+          return false // Skip duplicate color variants
+        }
+        seenProductGroups.add(groupKey)
+      }
+      return true
+    })
+  }, [])
 
   const filteredProducts = useMemo(() => {
-    let products = [...allSisiesProducts]
+    let products = [...uniqueProducts]
 
     if (searchQuery.trim()) {
       products = products.filter((p) => {
@@ -43,13 +60,15 @@ function ShopContent() {
     }
 
     return products
-  }, [sortBy, searchQuery, allSisiesProducts])
+  }, [sortBy, searchQuery, uniqueProducts])
 
-  const newArrivals = allSisiesProducts.slice(0, 4)
+  const newArrivals = useMemo(() => {
+    return PRODUCTS.filter((p) => p.isNewArrival === true)
+  }, [])
 
   return (
     <>
-      {/* ✅ Anchor أعلى الصفحة */}
+      {/* Anchor at top of page */}
       <div id="top" />
 
       {/* Hero Section */}
@@ -94,9 +113,14 @@ function ShopContent() {
                       fill
                       className="object-cover group-hover:scale-105 transition duration-300"
                     />
+                    {product.isNewArrival && (
+                      <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-medium px-2 py-1 rounded">
+                        New
+                      </span>
+                    )}
                   </div>
                   <h3 className="text-lg font-medium group-hover:text-accent transition">{product.name}</h3>
-                  <p className="text-muted-foreground text-sm capitalize mb-2">{product.category}</p>
+                  <p className="text-muted-foreground text-sm capitalize mb-2">{product.color}</p>
                   <p className="font-semibold">EGP {product.price}.00</p>
                 </Link>
               ))}
@@ -124,8 +148,12 @@ function ShopContent() {
                     fill
                     className="object-cover group-hover:scale-105 transition duration-300"
                   />
+                  <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-medium px-2 py-1 rounded">
+                    New
+                  </span>
                 </div>
                 <h3 className="text-lg font-medium mb-2 group-hover:text-accent transition">{product.name}</h3>
+                <p className="text-muted-foreground text-sm capitalize mb-1">{product.color}</p>
                 <p className="text-muted-foreground">EGP {product.price}.00</p>
               </Link>
             ))}
