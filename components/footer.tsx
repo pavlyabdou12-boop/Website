@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-import Link from "next/link"
 import { Mail, Instagram, Facebook } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -24,16 +23,24 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div>
             <h3 className="text-xl font-light mb-4">Sisies</h3>
-            <p className="text-sm opacity-80">Local hands, Egyptian heart, women first — that’s Sisies.</p>
+            <p className="text-sm opacity-80">Local hands, Egyptian heart, women first — that's Sisies.</p>
           </div>
 
           <div>
             <h4 className="font-medium mb-4">Shop</h4>
             <nav className="space-y-2 text-sm">
-              <button type="button" onClick={() => goTo("/shop")} className="block hover:opacity-80 transition text-left">
+              <button
+                type="button"
+                onClick={() => goTo("/shop")}
+                className="block hover:opacity-80 transition text-left"
+              >
                 All Products
               </button>
-              <button type="button" onClick={() => goTo("/sale")} className="block hover:opacity-80 transition text-left">
+              <button
+                type="button"
+                onClick={() => goTo("/sale")}
+                className="block hover:opacity-80 transition text-left"
+              >
                 Sale
               </button>
             </nav>
@@ -42,11 +49,12 @@ export default function Footer() {
           <div>
             <h4 className="font-medium mb-4">Support</h4>
             <nav className="space-y-2 text-sm">
-              <button type="button" onClick={() => goTo("/contact")} className="block hover:opacity-80 transition text-left">
+              <button
+                type="button"
+                onClick={() => goTo("/contact")}
+                className="block hover:opacity-80 transition text-left"
+              >
                 Contact Us
-              </button>
-              <button type="button" onClick={() => goTo("/faq")} className="block hover:opacity-80 transition text-left">
-                FAQ
               </button>
               <button
                 type="button"
@@ -55,7 +63,11 @@ export default function Footer() {
               >
                 Exchange
               </button>
-              <button type="button" onClick={() => goTo("/care")} className="block hover:opacity-80 transition text-left">
+              <button
+                type="button"
+                onClick={() => goTo("/care")}
+                className="block hover:opacity-80 transition text-left"
+              >
                 Care Instructions
               </button>
             </nav>

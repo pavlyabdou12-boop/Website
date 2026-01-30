@@ -5,15 +5,22 @@ import Image from "next/image"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { PRODUCTS } from "@/lib/product-data"
+import { Suspense } from "react"
 
 export default function HomePage() {
   const handleProductClick = () => {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const newArrivals = PRODUCTS.filter((p) => p.isNewArrival)
+    .concat(PRODUCTS.filter((p) => !p.isNewArrival).slice(0, 4 - PRODUCTS.filter((p) => p.isNewArrival).length))
+    .slice(0, 4)
+
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Suspense fallback={<div className="h-16 bg-background" />}>
+        <Header />
+      </Suspense>
 
       {/* Hero Banner */}
       <section className="relative h-screen bg-secondary">
@@ -51,7 +58,7 @@ export default function HomePage() {
           <h2 className="text-4xl md:text-5xl font-light mb-12 text-center text-pretty">New Arrivals</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PRODUCTS.slice(0, 4).map((product) => (
+            {newArrivals.map((product) => (
               <Link
                 key={product.id}
                 href={`/products/${product.id}`}
@@ -65,8 +72,16 @@ export default function HomePage() {
                     fill
                     className="object-cover group-hover:scale-105 transition duration-300"
                   />
+                  {product.isNewArrival && (
+                    <span className="absolute top-2 left-2 bg-accent text-accent-foreground px-2 py-1 text-xs font-medium">
+                      New
+                    </span>
+                  )}
                 </div>
-                <h3 className="text-lg font-medium mb-2">{product.name}</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  {product.name}{" "}
+                  {product.color && `- ${product.color.charAt(0).toUpperCase() + product.color.slice(1)}`}
+                </h3>
                 <p className="text-muted-foreground">EGP {product.price}.00</p>
               </Link>
             ))}
@@ -120,7 +135,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <Footer />
+      <Suspense fallback={<div className="h-20 bg-background" />}>
+        <Footer />
+      </Suspense>
     </div>
   )
 }

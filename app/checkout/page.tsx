@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import type React from "react"
+
+import { Suspense, useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -10,9 +12,33 @@ import { useCart } from "@/hooks/use-cart"
 import { CheckCircle2, ChevronRight } from "lucide-react"
 
 const EGYPTIAN_CITIES = [
-  "Cairo","Giza","Alexandria","Aswan","Asyut","Beheira","Beni Suef","Dakahlia","Damietta","Faiyum","Gharbia","Ismailia",
-  "Kafr El Sheikh","Luxor","Matruh","Minya","Monufia","New Valley","North Sinai","Port Said","Qalyubia","Qena","Red Sea",
-  "Sharqia","Sohag","South Sinai","Suez",
+  "Cairo",
+  "Giza",
+  "Alexandria",
+  "Aswan",
+  "Asyut",
+  "Beheira",
+  "Beni Suef",
+  "Dakahlia",
+  "Damietta",
+  "Faiyum",
+  "Gharbia",
+  "Ismailia",
+  "Kafr El Sheikh",
+  "Luxor",
+  "Matruh",
+  "Minya",
+  "Monufia",
+  "New Valley",
+  "North Sinai",
+  "Port Said",
+  "Qalyubia",
+  "Qena",
+  "Red Sea",
+  "Sharqia",
+  "Sohag",
+  "South Sinai",
+  "Suez",
 ].sort()
 
 type CheckoutStep = "contact" | "address" | "payment" | "confirmation"
@@ -50,17 +76,12 @@ const generateOrderNumber = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
-const sendConfirmationEmail = async (email: string, firstName: string, orderNumber: string, orderData: any) => {
-  try {
-    const response = await fetch("/api/send-confirmation-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, firstName, orderNumber, orderData }),
-    })
-    if (!response.ok) console.error("Failed to send confirmation email")
-  } catch (error) {
-    console.error("Error sending confirmation email:", error)
-  }
+function HeaderSkeleton() {
+  return <div className="h-20 bg-muted animate-pulse" />
+}
+
+function FooterSkeleton() {
+  return <div className="h-48 bg-muted animate-pulse" />
 }
 
 export default function CheckoutPage() {
@@ -68,6 +89,11 @@ export default function CheckoutPage() {
   const { cart, getTotalPrice, clearCart, isLoaded } = useCart()
 
   const [step, setStep] = useState<CheckoutStep>("contact")
+
+  // ✅ refs للسكرول (تعديل بسيط)
+  const addressTopRef = useRef<HTMLDivElement>(null)
+  const paymentTopRef = useRef<HTMLDivElement>(null)
+
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -151,12 +177,26 @@ export default function CheckoutPage() {
     }
   }
 
+  // ✅ function للسكرول (تعديل بسيط)
+  const scrollToRef = (ref: React.RefObject<HTMLDivElement>) => {
+    // نخليها بعد تحديث الـ DOM
+    setTimeout(() => {
+      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 0)
+  }
+
   const handleNext = async () => {
     if (!validateStep(step)) return
 
-    if (step === "contact") setStep("address")
-    else if (step === "address") setStep("payment")
-    else if (step === "payment") {
+    if (step === "contact") {
+      setStep("address")
+      // ✅ scroll لأعلى address
+      scrollToRef(addressTopRef)
+    } else if (step === "address") {
+      setStep("payment")
+      // ✅ scroll لأعلى payment
+      scrollToRef(paymentTopRef)
+    } else if (step === "payment") {
       const subtotal = getTotalPrice()
       const discount = promoDiscount
       const subtotalAfter = Math.max(0, subtotal - discount)
@@ -165,38 +205,98 @@ export default function CheckoutPage() {
       const newOrderNumber = generateOrderNumber()
 
       setIsSubmitting(true)
-      await new Promise((r) => setTimeout(r, 800))
 
-      await sendConfirmationEmail(formData.email, formData.firstName, newOrderNumber, {
-        orderNumber: newOrderNumber,
-        items: cart,
-        subtotal,
-        discount,
-        shipping,
-        total,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        address: `${formData.street}, ${formData.building}${formData.apartment ? `, ${formData.apartment}` : ""}, ${formData.city}`,
-        paymentMethod,
-      })
+      try {
+        const checkoutResponse = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customer: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              phone: formData.phone,
+              subscribeToOffers: subscribeOffers,
+            },
+            address: {
+              street: formData.street,
+              building: formData.building,
+              apartment: formData.apartment || undefined,
+              city: formData.city,
+              postalCode: formData.postalCode || undefined,
+              notes: formData.deliveryNotes || undefined,
+            },
+            items: cart.map((item) => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.image,
+              variant: {
+                size: item.selectedSize,
+                color: item.color,
+              },
+            })),
+            pricing: {
+              subtotal,
+              discount,
+              shippingFee: shipping,
+              total,
+            },
+            paymentMethod,
+            shippingRegion,
+          }),
+        })
 
-      setIsSubmitting(false)
+        if (!checkoutResponse.ok) {
+          let errorMessage = "Checkout failed"
+          try {
+            const errorData = await checkoutResponse.json()
+            errorMessage = errorData.error || errorData.message || errorMessage
+          } catch {
+            errorMessage = `Server error (${checkoutResponse.status})`
+          }
+          console.error("[v0] Checkout API error:", errorMessage)
+          setIsSubmitting(false)
+          return
+        }
 
-      setOrderSummary({
-        subtotal,
-        shipping,
-        total,
-        shippingRegion,
-        paymentMethod: paymentMethod!,
-        promoCode: appliedPromo ?? undefined,
-        discount,
-        orderNumber: newOrderNumber,
-      })
+        let checkoutData
+        try {
+          checkoutData = await checkoutResponse.json()
+        } catch (parseError) {
+          console.error("[v0] Failed to parse checkout response:", parseError)
+          setIsSubmitting(false)
+          return
+        }
 
-      clearCart()
-      setStep("confirmation")
-      requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior }))
+        if (!checkoutData.orderId || !checkoutData.orderNumber) {
+          console.error("[v0] Checkout API error: Missing orderId or orderNumber", checkoutData)
+          setIsSubmitting(false)
+          return
+        }
+
+        console.log("[v0] ✅ Order saved to Supabase:", checkoutData.orderNumber)
+
+        setIsSubmitting(false)
+
+        setOrderSummary({
+          subtotal,
+          shipping,
+          total,
+          shippingRegion,
+          paymentMethod,
+          promoCode: appliedPromo || undefined,
+          discount,
+          orderNumber: checkoutData.orderNumber,
+        })
+
+        clearCart()
+        setStep("confirmation")
+      } catch (error) {
+        console.error("[v0] Checkout error:", error)
+        setIsSubmitting(false)
+      }
     }
   }
 
@@ -215,7 +315,10 @@ export default function CheckoutPage() {
 
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Suspense fallback={<HeaderSkeleton />}>
+          <Header />
+        </Suspense>
+
         <div className="max-w-2xl mx-auto px-4 py-24">
           <div className="text-center mb-12">
             <CheckCircle2 size={64} className="text-accent mx-auto mb-6" />
@@ -274,7 +377,9 @@ export default function CheckoutPage() {
           </div>
 
           <div className="space-y-4">
-            <p className="text-center text-sm text-muted-foreground">A confirmation email has been sent to {formData.email}</p>
+            <p className="text-center text-sm text-muted-foreground">
+              A confirmation email has been sent to {formData.email}
+            </p>
             <Link
               href="/"
               className="block w-full bg-accent text-accent-foreground py-3 rounded-lg font-medium text-center hover:opacity-90 transition"
@@ -283,15 +388,19 @@ export default function CheckoutPage() {
             </Link>
           </div>
         </div>
-        <Footer />
+
+        <Suspense fallback={<FooterSkeleton />}>
+          <Footer />
+        </Suspense>
       </div>
     )
   }
 
-  // Main steps UI (زي ما عندك) — أنا سايبها نفس أسلوبك مع fixes
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Suspense fallback={<HeaderSkeleton />}>
+        <Header />
+      </Suspense>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-light mb-12 text-pretty">Checkout</h1>
@@ -316,7 +425,6 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Form */}
           <div className="lg:col-span-2">
             <form
               onSubmit={(e) => {
@@ -399,7 +507,8 @@ export default function CheckoutPage() {
 
               {/* Address */}
               {step === "address" && (
-                <div>
+                // ✅ ده اللي بيخلي السكرول يقف عند أول Address
+                <div ref={addressTopRef} className="scroll-mt-28">
                   <h2 className="text-2xl font-light mb-6">Delivery Address</h2>
                   <div className="space-y-4">
                     <div>
@@ -485,35 +594,74 @@ export default function CheckoutPage() {
 
               {/* Payment */}
               {step === "payment" && (
-                <div>
+                // ✅ ده اللي بيخلي السكرول يقف عند أول Payment
+                <div ref={paymentTopRef} className="scroll-mt-28">
                   <h2 className="text-2xl font-light mb-6">Payment Method</h2>
-                  <div className="space-y-4">
+
+                  <div className="flex gap-3">
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("instapay")}
-                      className={`w-full text-left px-4 py-3 rounded-lg border transition ${
-                        paymentMethod === "instapay" ? "border-accent bg-accent/10" : "border-border hover:bg-muted"
+                      className={`flex-1 py-3 px-4 rounded-lg border transition ${
+                        paymentMethod === "instapay"
+                          ? "bg-accent text-accent-foreground border-accent"
+                          : "border-border hover:bg-muted"
                       }`}
                     >
-                      <p className="font-medium">Instapay Wallet</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        01065161086 <span className="block">(Please send a screenshot on WhatsApp to confirm your order)</span>
-                      </p>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="font-medium">Instapay Wallet</span>
+                        {paymentMethod === "instapay" && (
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        )}
+                      </div>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("cod")}
-                      className={`w-full text-left px-4 py-3 rounded-lg border transition ${
-                        paymentMethod === "cod" ? "border-accent bg-accent/10" : "border-border hover:bg-muted"
+                      className={`flex-1 py-3 px-4 rounded-lg border transition ${
+                        paymentMethod === "cod"
+                          ? "bg-accent text-accent-foreground border-accent"
+                          : "border-border hover:bg-muted"
                       }`}
                     >
-                      <p className="font-medium">Cash on Delivery</p>
-                      <p className="text-sm text-muted-foreground mt-1">Pay in cash when your order arrives.</p>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="font-medium">Cash on Delivery</span>
+                        {paymentMethod === "cod" && (
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        )}
+                      </div>
                     </button>
-
-                    {errors.paymentMethod && <p className="text-destructive text-sm mt-1">{errors.paymentMethod}</p>}
                   </div>
+
+                  {paymentMethod === "instapay" && (
+                    <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
+                      <p className="font-medium mb-1">Instapay Number: 01065161086</p>
+                      <p className="text-muted-foreground">
+                        Please send a screenshot on WhatsApp to confirm your order
+                      </p>
+                    </div>
+                  )}
+
+                  {paymentMethod === "cod" && (
+                    <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
+                      <p className="text-muted-foreground">Pay in cash when your order arrives</p>
+                    </div>
+                  )}
+
+                  {errors.paymentMethod && <p className="text-destructive text-sm mt-3">{errors.paymentMethod}</p>}
                 </div>
               )}
 
@@ -532,7 +680,9 @@ export default function CheckoutPage() {
                   type="submit"
                   disabled={isSubmitting}
                   className={`flex-1 py-3 px-6 rounded-lg font-medium transition ${
-                    isSubmitting ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-accent text-accent-foreground hover:opacity-90"
+                    isSubmitting
+                      ? "bg-muted text-muted-foreground cursor-not-allowed"
+                      : "bg-accent text-accent-foreground hover:opacity-90"
                   }`}
                 >
                   {isSubmitting ? "Processing..." : step === "payment" ? "Place Order" : "Next"}
@@ -553,7 +703,9 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setShippingRegion("cairo-giza")}
                     className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition ${
-                      shippingRegion === "cairo-giza" ? "bg-accent text-accent-foreground border-accent" : "border-border hover:bg-muted"
+                      shippingRegion === "cairo-giza"
+                        ? "bg-accent text-accent-foreground border-accent"
+                        : "border-border hover:bg-muted"
                     }`}
                   >
                     Cairo / Giza
@@ -562,7 +714,9 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setShippingRegion("other")}
                     className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition ${
-                      shippingRegion === "other" ? "bg-accent text-accent-foreground border-accent" : "border-border hover:bg-muted"
+                      shippingRegion === "other"
+                        ? "bg-accent text-accent-foreground border-accent"
+                        : "border-border hover:bg-muted"
                     }`}
                   >
                     Other Governorates
@@ -648,7 +802,9 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      <Footer />
+      <Suspense fallback={<FooterSkeleton />}>
+        <Footer />
+      </Suspense>
     </div>
   )
 }

@@ -1,29 +1,22 @@
 "use client"
 
-import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Menu, X, ShoppingBag, Search, Instagram, Facebook, Heart } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { useWishlist } from "@/hooks/use-wishlist"
+import { HeaderSearch } from "./header-search"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState("")
 
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
 
   const desktopSearchRef = useRef<HTMLInputElement | null>(null)
   const mobileSearchRef = useRef<HTMLInputElement | null>(null)
-
-  const initialSearch = searchParams.get("search") ?? ""
-  const [searchValue, setSearchValue] = useState(initialSearch)
-
-  useEffect(() => {
-    setSearchValue(initialSearch)
-  }, [initialSearch])
 
   const { getTotalItems, isLoaded } = useCart()
   const { getTotalItems: getWishlistItems, isLoaded: wishlistLoaded } = useWishlist()
@@ -31,65 +24,66 @@ export default function Header() {
   const itemCount = isLoaded ? getTotalItems() : 0
   const wishlistCount = wishlistLoaded ? getWishlistItems() : 0
 
-  // ✅ يضمن focus أول ما الـ search يفتح
+  // ✅ URL → State sync (from HeaderSearch)
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value)
+  }
+
+  // ✅ focus أول ما search يفتح
   useEffect(() => {
     if (!isSearchOpen) return
 
-    // شوية delay عشان input يترسم
     const t = setTimeout(() => {
-      if (window.innerWidth >= 768) {
-        desktopSearchRef.current?.focus()
-      } else {
-        mobileSearchRef.current?.focus()
-      }
+      const isDesktop = window.innerWidth >= 768
+      const input = isDesktop ? desktopSearchRef.current : mobileSearchRef.current
+      input?.focus()
+      input?.setSelectionRange(input.value.length, input.value.length)
     }, 50)
 
     return () => clearTimeout(t)
-  }, [isSearchOpen, pathname])
+  }, [isSearchOpen])
 
   const goToTopAfterNav = () => {
-    // بعد الـ route change، ننزل للأعلى
     requestAnimationFrame(() => {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior })
     })
   }
 
-  // ✅ استخدم دي لأي لينك في الهيدر عشان يروح لأول صفحة الوجهة
   const handleNav = (href: string) => {
     setIsMenuOpen(false)
     setIsSearchOpen(false)
-
     router.push(href)
     goToTopAfterNav()
   }
 
-  const handleSearchChange = (value: string) => {
-    setSearchValue(value)
-
-    const params = new URLSearchParams()
-    if (value.trim()) params.set("search", value)
-
-    const url = params.toString() ? `/shop?${params.toString()}` : "/shop"
-    router.push(url)
-  }
-
-  // ✅ دوسة واحدة: يودّيك shop ويفتح search
   const toggleSearch = () => {
     setIsMenuOpen(false)
 
-    // لو مش في /shop: روح shop وافتح search مرة واحدة
     if (pathname !== "/shop") {
       router.push("/shop")
       setIsSearchOpen(true)
       return
     }
 
-    // لو بالفعل في /shop: افتح/اقفل
     setIsSearchOpen((prev) => !prev)
+  }
+
+  const performSearch = () => {
+    const q = searchValue.trim()
+    if (!q) return
+
+    setIsSearchOpen(false)
+    setIsMenuOpen(false)
+
+    router.push(`/shop?search=${encodeURIComponent(q)}`)
+    goToTopAfterNav()
   }
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border">
+      {/* ✅ URL param sync */}
+      <HeaderSearch onSearchChange={handleSearchChange} />
+
       <div className="max-w-7xl bg-[rgba(208,193,177,1)] leading-7 tracking-normal mx-px my-px px-4 py-6">
         <div className="flex items-center justify-between">
           {/* Logo - Home */}
@@ -128,6 +122,7 @@ export default function Header() {
               About
             </button>
 
+            {/* Social Icons Desktop */}
             <div className="flex items-center gap-4">
               <a
                 href="https://www.instagram.com/sisies.boutique?igsh=bTFpdHJob3JwOG8="
@@ -147,6 +142,8 @@ export default function Header() {
               >
                 <Facebook className="text-amber-950" size={20} />
               </a>
+
+              {/* ✅ TikTok Desktop */}
               <a
                 href="https://www.tiktok.com/@sisies85?_r=1&_t=ZS-91izWVleKA9"
                 target="_blank"
@@ -171,7 +168,10 @@ export default function Header() {
                 ref={desktopSearchRef}
                 type="text"
                 value={searchValue}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") performSearch()
+                }}
                 placeholder="Search products..."
                 className="hidden md:block bg-background border border-border px-3 py-1 rounded text-sm w-64"
               />
@@ -231,7 +231,10 @@ export default function Header() {
               ref={mobileSearchRef}
               type="text"
               value={searchValue}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") performSearch()
+              }}
               placeholder="Search products..."
               className="w-full bg-background border border-border px-3 py-2 rounded text-sm"
             />
@@ -241,19 +244,36 @@ export default function Header() {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className="md:hidden mt-4 space-y-3 pb-4 border-t border-border pt-4">
-            <button type="button" onClick={() => handleNav("/")} className="block text-left w-full text-foreground hover:text-accent transition">
+            <button
+              type="button"
+              onClick={() => handleNav("/")}
+              className="block text-left w-full text-foreground hover:text-accent transition"
+            >
               Home
             </button>
-            <button type="button" onClick={() => handleNav("/shop")} className="block text-left w-full text-foreground hover:text-accent transition">
+            <button
+              type="button"
+              onClick={() => handleNav("/shop")}
+              className="block text-left w-full text-foreground hover:text-accent transition"
+            >
               Shop All
             </button>
-            <button type="button" onClick={() => handleNav("/about")} className="block text-left w-full text-foreground hover:text-accent transition">
+            <button
+              type="button"
+              onClick={() => handleNav("/about")}
+              className="block text-left w-full text-foreground hover:text-accent transition"
+            >
               About
             </button>
-            <button type="button" onClick={() => handleNav("/wishlist")} className="block text-left w-full text-foreground hover:text-accent transition">
+            <button
+              type="button"
+              onClick={() => handleNav("/wishlist")}
+              className="block text-left w-full text-foreground hover:text-accent transition"
+            >
               Wishlist
             </button>
 
+            {/* Social Icons Mobile */}
             <div className="flex items-center gap-4 pt-2">
               <a
                 href="https://www.instagram.com/sisies.boutique?igsh=bTFpdHJob3JwOG8="
@@ -273,6 +293,8 @@ export default function Header() {
               >
                 <Facebook size={20} />
               </a>
+
+              {/* ✅ TikTok Mobile */}
               <a
                 href="https://www.tiktok.com/@sisies85?_r=1&_t=ZS-91izWVleKA9"
                 target="_blank"
