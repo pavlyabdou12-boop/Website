@@ -266,7 +266,7 @@ export const PRODUCTS = [
     category: "abayas",
     collection: "ramadan",
     color: "beige",
-    price: 1400,
+    price: 2770,
     image: "/images/moonlight-1.png",
     description: "Elegant beige open abaya with stunning hand-embroidered patchwork bell sleeves featuring vibrant geometric patterns and gold accents",
     sizes: ["One Size"],
