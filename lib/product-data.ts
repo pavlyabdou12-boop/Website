@@ -273,6 +273,8 @@ export const PRODUCTS = [
     additionalImages: [
       "/images/moonlight-2.png",
       "/images/moonlight-3.png",
+      "/images/moonlight-4.png",
+      "/images/moonlight-5.png",
     ],
     isNewArrival: true,
   },

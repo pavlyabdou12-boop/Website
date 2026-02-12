@@ -55,7 +55,7 @@ export default function HomePage() {
       </section>
 
       {/* Ramadan Collection Section */}
-      <section className="py-16 md:py-24 px-4 bg-[#1a1a1a] bg-background">
+      <section className="py-16 md:py-24 px-4 bg-[#1a1a1a]">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-light mb-4 text-center text-pretty text-[#d4af37]">
             Ramadan Collection
