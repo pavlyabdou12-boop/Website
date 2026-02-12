@@ -164,14 +164,14 @@ function ShopContent() {
               Showing {filteredProducts.length} results
             </p>
             <div className="flex items-center gap-2">
-              <label htmlFor="sort" className={`text-sm ${collectionFilter === "ramadan" ? "text-[#c4a882]" : "text-muted-foreground"}`}>
+              <label htmlFor="sort" className={`text-sm text-card-foreground ${collectionFilter === "ramadan" ? "text-[#c4a882]" : "text-muted-foreground"}`}>
                 Sort by:
               </label>
               <select
                 id="sort"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className={`border px-3 py-2 rounded cursor-pointer text-sm bg-card ${
+                className={`border px-3 py-2 rounded cursor-pointer text-sm bg-card text-secondary-foreground border-card-foreground ${
                   collectionFilter === "ramadan"
                     ? "bg-[#2a2a2a] border-[#d4af37]/30 text-[#f0e6d3]"
                     : "bg-background border-border"
@@ -209,7 +209,7 @@ function ShopContent() {
                         </span>
                       )}
                     </div>
-                    <h3 className={`text-lg font-medium group-hover:text-accent transition ${
+                    <h3 className={`text-lg font-medium group-hover:text-accent transition text-primary ${
                       collectionFilter === "ramadan" ? "text-[#f0e6d3]" : ""
                     }`}>
                       {product.name}
