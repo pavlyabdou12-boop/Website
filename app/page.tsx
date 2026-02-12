@@ -106,7 +106,7 @@ export default function HomePage() {
                     New
                   </span>
                 </div>
-                <h3 className="text-xl font-medium mb-2 text-[#f0e6d3]">{product.name}</h3>
+                <h3 className="text-xl font-medium mb-2 text-[#f0e6d3] text-primary">{product.name}</h3>
                 <p className="text-[#d4af37] font-semibold">EGP {product.price}.00</p>
               </Link>
             ))}
