@@ -107,7 +107,7 @@ function ShopContent() {
       <div id="top" />
 
       {/* Hero Section */}
-      <section className={`py-12 px-4 bg-card ${collectionFilter === "ramadan" ? "bg-[#1a1a1a]" : "bg-muted/50"}`}>
+      <section className={`py-12 px-4 bg-background ${collectionFilter === "ramadan" ? "bg-[#1a1a1a]" : "bg-muted/50"}`}>
         <div className="max-w-7xl mx-auto">
           <h1 className={`text-4xl md:text-5xl font-light text-pretty text-foreground ${collectionFilter === "ramadan" ? "text-[#d4af37]" : ""}`}>
             {pageTitle}
