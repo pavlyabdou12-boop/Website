@@ -144,7 +144,7 @@ function ShopContent() {
             </Link>
             <Link
               href="/shop?collection=ramadan"
-              className={`px-4 py-2 rounded-full text-sm font-medium transition border bg-primary ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition border bg-card ${
                 collectionFilter === "ramadan"
                   ? "bg-[#d4af37] text-[#1a1a1a] border-[#d4af37]"
                   : "border-border text-muted-foreground hover:border-foreground"
