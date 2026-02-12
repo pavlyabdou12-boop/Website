@@ -107,7 +107,7 @@ function ShopContent() {
       <div id="top" />
 
       {/* Hero Section */}
-      <section className={`py-12 px-4 ${collectionFilter === "ramadan" ? "bg-[#1a1a1a]" : "bg-muted/50"}`}>
+      <section className={`py-12 px-4 bg-card ${collectionFilter === "ramadan" ? "bg-[#1a1a1a]" : "bg-muted/50"}`}>
         <div className="max-w-7xl mx-auto">
           <h1 className={`text-4xl md:text-5xl font-light text-pretty text-foreground ${collectionFilter === "ramadan" ? "text-[#d4af37]" : ""}`}>
             {pageTitle}
@@ -157,7 +157,7 @@ function ShopContent() {
       </section>
 
       {/* All Products + Sort */}
-      <div className={`max-w-7xl mx-auto px-4 py-12 ${collectionFilter === "ramadan" ? "bg-[#1a1a1a]" : ""}`}>
+      <div className={`max-w-7xl mx-auto px-4 py-12 bg-card ${collectionFilter === "ramadan" ? "bg-[#1a1a1a]" : ""}`}>
         <div className="w-full">
           <div className={`flex items-center justify-between mb-8 pb-6 border-b ${collectionFilter === "ramadan" ? "border-[#d4af37]/20" : "border-border"}`}>
             <p className={collectionFilter === "ramadan" ? "text-[#c4a882]" : "text-muted-foreground"}>
