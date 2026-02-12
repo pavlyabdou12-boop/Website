@@ -262,7 +262,7 @@ export const PRODUCTS = [
   },
   {
     id: 14,
-    name: "Moonlight",
+    name: "Masterpiece",
     category: "abayas",
     collection: "ramadan",
     color: "beige",
