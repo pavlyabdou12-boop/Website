@@ -79,7 +79,7 @@ export default function HomePage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10">
-                <span className="inline-block bg-[#d4af37] text-[#1a1a1a] px-6 py-2 text-sm font-medium tracking-wider uppercase rounded">
+                <span className="inline-block bg-[#d4af37] text-[#1a1a1a] px-6 py-2 text-sm font-medium tracking-wider uppercase rounded opacity-60 bg-secondary">
                   Shop Ramadan Collection
                 </span>
               </div>
@@ -102,7 +102,7 @@ export default function HomePage() {
                     fill
                     className="object-cover group-hover:scale-105 transition duration-300"
                   />
-                  <span className="absolute top-3 left-3 bg-[#d4af37] text-[#1a1a1a] px-3 py-1 text-xs font-medium rounded">
+                  <span className="absolute top-3 left-3 bg-[#d4af37] text-[#1a1a1a] px-3 py-1 text-xs font-medium rounded opacity-70 bg-card">
                     New
                   </span>
                 </div>
@@ -135,7 +135,7 @@ export default function HomePage() {
                     className="object-cover group-hover:scale-105 transition duration-300"
                   />
                   {product.isNewArrival && (
-                    <span className="absolute top-2 left-2 bg-accent text-accent-foreground px-2 py-1 text-xs font-medium">
+                    <span className="absolute top-2 left-2 text-accent-foreground px-2 py-1 text-xs font-medium opacity-65 bg-foreground">
                       New
                     </span>
                   )}
