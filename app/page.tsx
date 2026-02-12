@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
-import { PRODUCTS } from "@/lib/product-data"
+import { PRODUCTS } from "@/public/images/product-data"
 import { Suspense } from "react"
 
 export default function HomePage() {

@@ -6,7 +6,7 @@ import Link from "next/link"
 import Image from "next/image"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
-import { PRODUCTS } from "@/lib/product-data"
+import { PRODUCTS } from "@/public/images/product-data"
 
 function getColorHex(color: string): string {
   const colorMap: Record<string, string> = {
