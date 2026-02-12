@@ -46,7 +46,7 @@ export default function HomePage() {
             <Link
               href="/shop"
               onClick={handleProductClick}
-              className="inline-block text-accent-foreground rounded hover:opacity-90 transition font-medium bg-amber-950 mx-0 leading-7 px-8 py-3 my-0 border-0 opacity-75"
+              className="inline-block text-accent-foreground rounded hover:opacity-90 transition font-medium mx-0 leading-7 px-8 py-3 my-0 border-0 opacity-75 bg-primary"
             >
               Shop Now
             </Link>
@@ -55,7 +55,7 @@ export default function HomePage() {
       </section>
 
       {/* Ramadan Collection Section */}
-      <section className="py-16 md:py-24 px-4 bg-[#1a1a1a]">
+      <section className="py-16 md:py-24 px-4 bg-[#1a1a1a] bg-background">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-light mb-4 text-center text-pretty text-[#d4af37]">
             Ramadan Collection
