@@ -43,12 +43,11 @@ function ShopContent() {
 
       // If product has color variants, create a group key based on product name (without color)
       if (product.colorVariants && product.colorVariants.length > 0) {
-        // Get base name without color
-        const baseName = product.name.replace(/Black |Mint |Burgundy |Olive |Beige /gi, "").trim()
+        const baseName = product.name
+          .replace(/Black |Mint |Burgundy |Olive |Beige /gi, "")
+          .trim()
         const groupKey = baseName || product.name
-        if (seenProductGroups.has(groupKey)) {
-          return false // Skip duplicate color variants - we'll show swatches instead
-        }
+        if (seenProductGroups.has(groupKey)) return false
         seenProductGroups.add(groupKey)
       }
       return true
@@ -58,7 +57,6 @@ function ShopContent() {
   const filteredProducts = useMemo(() => {
     let products = [...uniqueProducts]
 
-    // Filter by collection if specified
     if (collectionFilter) {
       products = products.filter((p) => p.collection === collectionFilter)
     }
@@ -94,25 +92,37 @@ function ShopContent() {
     return PRODUCTS.filter((p) => p.isNewArrival === true)
   }, [])
 
-  const pageTitle = collectionFilter === "ramadan" ? "Ramadan Collection" : collectionFilter === "winter" ? "Winter Collection" : "Shop All"
-  const pageDescription = collectionFilter === "ramadan"
-    ? "Elegant abayas for the holiest nights"
-    : collectionFilter === "winter"
-    ? "Stay warm and stylish with our winter pieces"
-    : "Browse our complete collection of elegant pieces"
+  const pageTitle =
+    collectionFilter === "ramadan"
+      ? "Ramadan Collection"
+      : collectionFilter === "winter"
+      ? "Winter Collection"
+      : "Shop All"
+
+  const pageDescription =
+    collectionFilter === "ramadan"
+      ? "Elegant abayas for the holiest nights"
+      : collectionFilter === "winter"
+      ? "Stay warm and stylish with our winter pieces"
+      : "Browse our complete collection of elegant pieces"
+
+  const isRamadan = collectionFilter === "ramadan"
 
   return (
     <>
-      {/* Anchor at top of page */}
       <div id="top" />
 
-      {/* Hero Section */}
-      <section className={`py-12 px-4 bg-background ${collectionFilter === "ramadan" ? "bg-[#1a1a1a]" : "bg-muted/50"}`}>
+      {/* Hero Section (REMOVED black background) */}
+      <section className="py-12 px-4 bg-muted/50">
         <div className="max-w-7xl mx-auto">
-          <h1 className={`text-4xl md:text-5xl font-light text-pretty text-foreground ${collectionFilter === "ramadan" ? "text-[#d4af37]" : ""}`}>
+          <h1
+            className={`text-4xl md:text-5xl font-light text-pretty text-foreground ${
+              isRamadan ? "text-[#d4af37]" : ""
+            }`}
+          >
             {pageTitle}
           </h1>
-          <p className={`mt-2 ${collectionFilter === "ramadan" ? "text-[#c4a882]" : "text-muted-foreground"}`}>
+          <p className={`mt-2 ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}`}>
             {pageDescription}
           </p>
 
@@ -123,31 +133,31 @@ function ShopContent() {
               className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
                 !collectionFilter
                   ? "bg-amber-950 text-card border-amber-950"
-                  : collectionFilter === "ramadan"
-                  ? "border-[#d4af37]/40 text-[#c4a882] hover:border-[#d4af37]"
+                  : isRamadan
+                  ? "border-[#d4af37]/40 text-[#6b5b3e] hover:border-[#d4af37]"
                   : "border-border text-muted-foreground hover:border-foreground"
               }`}
             >
               All
             </Link>
+
             <Link
               href="/shop?collection=winter"
               className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
                 collectionFilter === "winter"
                   ? "bg-amber-950 text-card border-amber-950"
-                  : collectionFilter === "ramadan"
-                  ? "border-[#d4af37]/40 text-[#c4a882] hover:border-[#d4af37]"
+                  : isRamadan
+                  ? "border-[#d4af37]/40 text-[#6b5b3e] hover:border-[#d4af37]"
                   : "border-border text-muted-foreground hover:border-foreground"
               }`}
             >
               Winter Collection
             </Link>
+
             <Link
               href="/shop?collection=ramadan"
               className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
-                collectionFilter === "ramadan"
-                  ? "bg-amber-950 text-card border-amber-950"
-                  : "border-border text-muted-foreground hover:border-foreground"
+                isRamadan ? "bg-amber-950 text-card border-amber-950" : "border-border text-muted-foreground hover:border-foreground"
               }`}
             >
               Ramadan Collection
@@ -156,25 +166,25 @@ function ShopContent() {
         </div>
       </section>
 
-      {/* All Products + Sort */}
-      <div className={`max-w-7xl mx-auto px-4 py-12 bg-card ${collectionFilter === "ramadan" ? "bg-[#1a1a1a]" : ""}`}>
+      {/* All Products + Sort (REMOVED black background) */}
+      <div className="max-w-7xl mx-auto px-4 py-12 bg-card">
         <div className="w-full">
-          <div className={`flex items-center justify-between mb-8 pb-6 border-b ${collectionFilter === "ramadan" ? "border-[#d4af37]/20" : "border-border"}`}>
-            <p className={collectionFilter === "ramadan" ? "text-[#c4a882]" : "text-muted-foreground"}>
+          <div className={`flex items-center justify-between mb-8 pb-6 border-b ${isRamadan ? "border-[#d4af37]/20" : "border-border"}`}>
+            <p className={isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}>
               Showing {filteredProducts.length} results
             </p>
+
             <div className="flex items-center gap-2">
-              <label htmlFor="sort" className={`text-sm text-card-foreground ${collectionFilter === "ramadan" ? "text-[#c4a882]" : "text-muted-foreground"}`}>
+              <label htmlFor="sort" className={`text-sm ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}`}>
                 Sort by:
               </label>
+
               <select
                 id="sort"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className={`border px-3 py-2 rounded cursor-pointer text-sm bg-card text-secondary-foreground border-card-foreground ${
-                  collectionFilter === "ramadan"
-                    ? "bg-[#2a2a2a] border-[#d4af37]/30 text-[#f0e6d3]"
-                    : "bg-background border-border"
+                className={`border px-3 py-2 rounded cursor-pointer text-sm bg-background border-border ${
+                  isRamadan ? "border-[#d4af37]/30 text-foreground" : ""
                 }`}
               >
                 <option value="featured">Featured</option>
@@ -190,28 +200,26 @@ function ShopContent() {
               {filteredProducts.map((product) => (
                 <div key={product.id} className="group">
                   <Link href={`/products/${product.id}`} className="cursor-pointer">
-                    <div className={`relative overflow-hidden aspect-square mb-4 rounded-lg ${
-                      collectionFilter === "ramadan" ? "bg-[#2a2a2a]" : "bg-muted"
-                    }`}>
+                    <div className="relative overflow-hidden aspect-square mb-4 rounded-lg bg-muted">
                       <Image
                         src={product.image || "/placeholder.svg"}
                         alt={product.name}
                         fill
                         className="object-cover group-hover:scale-105 transition duration-300"
                       />
+
                       {product.isNewArrival && (
-                        <span className={`absolute top-3 left-3 text-xs font-medium px-2 py-1 rounded ${
-                          collectionFilter === "ramadan"
-                            ? "bg-[#d4af37] text-[#1a1a1a]"
-                            : "bg-accent text-accent-foreground"
-                        }`}>
+                        <span
+                          className={`absolute top-3 left-3 text-xs font-medium px-2 py-1 rounded ${
+                            isRamadan ? "bg-[#d4af37] text-[#1a1a1a]" : "bg-accent text-accent-foreground"
+                          }`}
+                        >
                           New
                         </span>
                       )}
                     </div>
-                    <h3 className={`text-lg font-medium group-hover:text-accent transition text-primary ${
-                      collectionFilter === "ramadan" ? "text-[#f0e6d3]" : ""
-                    }`}>
+
+                    <h3 className={`text-lg font-medium group-hover:text-accent transition text-primary ${isRamadan ? "text-foreground" : ""}`}>
                       {product.name}
                     </h3>
                   </Link>
@@ -233,22 +241,18 @@ function ShopContent() {
                       ))}
                     </div>
                   ) : (
-                    <p className={`text-sm capitalize mb-2 ${
-                      collectionFilter === "ramadan" ? "text-[#c4a882]" : "text-muted-foreground"
-                    }`}>
+                    <p className={`text-sm capitalize mb-2 ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}`}>
                       {product.color}
                     </p>
                   )}
 
-                  <p className={`font-semibold ${collectionFilter === "ramadan" ? "text-[#d4af37]" : ""}`}>
-                    EGP {product.price}.00
-                  </p>
+                  <p className={`font-semibold ${isRamadan ? "text-[#d4af37]" : ""}`}>EGP {product.price}.00</p>
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className={`text-lg ${collectionFilter === "ramadan" ? "text-[#c4a882]" : "text-muted-foreground"}`}>
+              <p className={`text-lg ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}`}>
                 No products found. Try another search.
               </p>
             </div>
@@ -312,12 +316,13 @@ function ShopContent() {
 }
 
 function ShopPageInner() {
+  // KEEP the ramadan flag for text styling only, but DO NOT change page background
   const searchParams = useSearchParams()
   const collectionFilter = searchParams.get("collection") ?? ""
   const isRamadan = collectionFilter === "ramadan"
 
   return (
-    <div className={`min-h-screen ${isRamadan ? "bg-[#1a1a1a]" : "bg-background"}`}>
+    <div className="min-h-screen bg-background">
       <Suspense fallback={<div className="h-16 bg-background" />}>
         <Header />
       </Suspense>
@@ -326,9 +331,12 @@ function ShopPageInner() {
         <ShopContent />
       </Suspense>
 
-      <Suspense fallback={<div className="h-20 bg-background" />}>
-        <Footer />
-      </Suspense>
+      {/* Wrap footer with bg to prevent any “black bleed” */}
+      <div className="bg-background">
+        <Suspense fallback={<div className="h-20 bg-background" />}>
+          <Footer />
+        </Suspense>
+      </div>
     </div>
   )
 }
