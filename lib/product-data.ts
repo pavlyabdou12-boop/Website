@@ -332,7 +332,7 @@ export const PRODUCTS = [
     color: "black",
     price: 1650,
     image: "/images/arabic-calligraphy-1.png",
-    description: "A luxurious black kaftan with a flowing silhouette, beautifully accented with gold lining and intricate embroidered details along the edges. Elegant and statement-making, it blends classic charm with refined sophistication — perfect for special evenings and graceful gatherings",
+    description: "A black kaftan with a loose, flowing fit, finished with gold lining and simple embroidered details on the edges. Elegant and easy to wear — perfect for special evenings and gatherings",
     sizes: ["One Size"],
     additionalImages: [
       "/images/arabic-calligraphy-2.png",
