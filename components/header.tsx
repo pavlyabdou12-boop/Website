@@ -125,7 +125,7 @@ export default function Header() {
             {/* Social Icons Desktop */}
             <div className="flex items-center gap-4">
               <a
-                href="https://www.instagram.com/sisies.boutique?igsh=bTFpdHJob3JwOG8="
+                href="https://www.instagram.com/sisies.eg?igsh=bmw0ZHZvazJqdjQ0"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"

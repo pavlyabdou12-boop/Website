@@ -277,7 +277,7 @@ function ProductContent() {
 
           <div className="mb-8">
             <label className="block font-medium mb-2">Size</label>
-            <p className="inline-block px-6 py-3 rounded-lg font-medium text-white bg-primary-foreground">
+            <p className="inline-block px-6 py-3 rounded-lg font-medium text-background bg-primary-foreground">
               One size up to 90 kg
             </p>
             <p className="text-muted-foreground text-sm mt-2">Fits body types up to 90 kg</p>
@@ -308,7 +308,7 @@ function ProductContent() {
             type="button"
             onClick={handleAddToCart}
             className={`py-4 px-8 rounded-lg font-medium text-lg transition mb-4 w-full bg-primary-foreground ${
-              isAdded ? "bg-green-600 text-white" : "bg-accent text-accent-foreground hover:opacity-90"
+              isAdded ? "bg-green-600 text-white" : "bg-foreground text-background hover:opacity-90"
             }`}
           >
             {isAdded ? "Added to Bag" : "Add to Bag"}
