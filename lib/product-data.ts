@@ -268,7 +268,7 @@ export const PRODUCTS = [
     color: "beige",
     price: 2770,
     image: "/images/moonlight-1.png",
-    description: "A soft beige kaftan with a relaxed, elegant fit, highlighted by vibrant patterned sleeves. The detailed geometric design adds a colorful, artistic touch while keeping the overall look classy and effortless — perfect for stylish everyday wear or special gatherings.",
+    description: "A soft beige kaftan with a elegant fit, highlighted by vibrant patterned sleeves. The detailed geometric design adds a colorful, artistic touch while keeping the overall look classy and effortless — perfect for stylish everyday wear or special gatherings.",
     sizes: ["One Size"],
     colorVariants: [
       { color: "beige", productId: 14 },
