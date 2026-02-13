@@ -249,7 +249,7 @@ export const PRODUCTS = [
     color: "black",
     price: 1950,
     image: "/images/lail-1.png",
-    description: "Luxurious black abaya with shimmering beaded fringe details, satin lining, and an elegant hooded silhouette - perfect for Ramadan gatherings",
+    description: "A classic black kaftan with a loose, flowing fit and wide sleeves adorned with soft fringe details. Simple, elegant, and effortlessly chic — perfect for evening gatherings and timeless looks.",
     sizes: ["One Size"],
     additionalImages: [
       "/images/lail-2.png",
@@ -268,7 +268,7 @@ export const PRODUCTS = [
     color: "beige",
     price: 2770,
     image: "/images/moonlight-1.png",
-    description: "Elegant beige open abaya with stunning hand-embroidered patchwork bell sleeves featuring vibrant geometric patterns and gold accents",
+    description: "A soft beige kaftan with a relaxed, elegant fit, highlighted by vibrant patterned sleeves. The detailed geometric design adds a colorful, artistic touch while keeping the overall look classy and effortless — perfect for stylish everyday wear or special gatherings.",
     sizes: ["One Size"],
     colorVariants: [
       { color: "beige", productId: 14 },
@@ -277,8 +277,6 @@ export const PRODUCTS = [
     additionalImages: [
       "/images/moonlight-2.png",
       "/images/moonlight-3.png",
-      "/images/moonlight-4.png",
-      "/images/moonlight-5.png",
       "/images/masterpiece-beige-4.png",
       "/images/masterpiece-beige-5.png",
     ],
@@ -292,7 +290,7 @@ export const PRODUCTS = [
     color: "black",
     price: 2770,
     image: "/images/masterpiece-black-1.png",
-    description: "Luxurious black velvet open abaya with stunning hand-embroidered patchwork bell sleeves featuring vibrant geometric patterns and gold accents",
+    description: "A soft black kaftan with a relaxed, elegant fit, highlighted by vibrant patterned sleeves. The detailed geometric design adds a colorful, artistic touch while keeping the overall look classy and effortless — perfect for stylish everyday wear or special gatherings.",
     sizes: ["One Size"],
     colorVariants: [
       { color: "beige", productId: 14 },
@@ -314,7 +312,7 @@ export const PRODUCTS = [
     color: "beige",
     price: 1400,
     image: "/images/moonlight-6.png",
-    description: "Elegant beige open abaya adorned with delicate embroidered crescent moons in brown and gold, featuring flowing bell sleeves",
+    description: "A beige kaftan with a loose, flowy silhouette and wide sleeves, designed for comfort and elegance. The subtle crescent details scattered across the fabric add a soft, unique touch, making it simple yet distinctive — perfect for effortless, graceful styling",
     sizes: ["One Size"],
     additionalImages: [
       "/images/moonlight-4.png",
@@ -334,7 +332,7 @@ export const PRODUCTS = [
     color: "black",
     price: 1650,
     image: "/images/arabic-calligraphy-1.png",
-    description: "Luxurious black velvet abaya with golden Arabic calligraphy trim and champagne satin lining, a statement piece for Ramadan nights",
+    description: "A luxurious black kaftan with a flowing silhouette, beautifully accented with gold lining and intricate embroidered details along the edges. Elegant and statement-making, it blends classic charm with refined sophistication — perfect for special evenings and graceful gatherings",
     sizes: ["One Size"],
     additionalImages: [
       "/images/arabic-calligraphy-2.png",
