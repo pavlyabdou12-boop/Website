@@ -69,8 +69,8 @@ interface OrderSummary {
   orderNumber: string
 }
 
-const ACTIVE_PROMO_CODE = "SISIES10"
-const ACTIVE_PROMO_DISCOUNT = 0.1
+const ACTIVE_PROMO_CODE = "LAMARKET"
+const ACTIVE_PROMO_DISCOUNT = 70
 
 const generateOrderNumber = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString()
@@ -167,7 +167,7 @@ export default function CheckoutPage() {
 
     if (code === ACTIVE_PROMO_CODE) {
       const subtotal = getTotalPrice()
-      const discountAmount = Math.min(subtotal * ACTIVE_PROMO_DISCOUNT, subtotal)
+      const discountAmount = Math.min(ACTIVE_PROMO_DISCOUNT, subtotal)
       setPromoDiscount(discountAmount)
       setAppliedPromo(code)
     } else {
@@ -649,9 +649,7 @@ export default function CheckoutPage() {
                   {paymentMethod === "instapay" && (
                     <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
                       <p className="font-medium mb-1">Instapay Number: 01065161086</p>
-                      <p className="text-muted-foreground">
-                        Please send a screenshot on WhatsApp to confirm your order
-                      </p>
+                      <p className="text-muted-foreground">Please send a screenshot on WhatsApp to confirm your order</p>
                     </div>
                   )}
 
@@ -745,7 +743,7 @@ export default function CheckoutPage() {
                 </div>
                 {appliedPromo && (
                   <p className="text-xs text-green-600 mt-1">
-                    Code &quot;{appliedPromo}&quot; applied ({Math.round(ACTIVE_PROMO_DISCOUNT * 100)}% off)
+                    Code &quot;{appliedPromo}&quot; applied (EGP {ACTIVE_PROMO_DISCOUNT} off)
                   </p>
                 )}
                 {promoError && <p className="text-xs text-destructive mt-1">{promoError}</p>}
