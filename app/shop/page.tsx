@@ -208,7 +208,13 @@ function ShopContent() {
                         className="object-cover group-hover:scale-105 transition duration-300"
                       />
 
-                      {product.isNewArrival && (
+                      {(product as any).soldOut && (
+                        <span className="absolute top-3 right-3 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
+                          Sold Out
+                        </span>
+                      )}
+
+                      {product.isNewArrival && !((product as any).soldOut) && (
                         <span
                           className={`absolute top-3 left-3 text-xs font-medium px-2 py-1 rounded ${
                             isRamadan ? "bg-[#d4af37] text-[#1a1a1a]" : "bg-accent text-accent-foreground"
@@ -246,7 +252,14 @@ function ShopContent() {
                     </p>
                   )}
 
-                  <p className={`font-semibold ${isRamadan ? "text-[#d4af37]" : ""}`}>EGP {product.price}.00</p>
+                  <div className={`${isRamadan ? "text-[#d4af37]" : ""}`}>
+                    {(product as any).originalPrice && (
+                      <p className={`text-sm font-medium line-through ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"} mb-1`}>
+                        EGP {(product as any).originalPrice}.00
+                      </p>
+                    )}
+                    <p className={`font-semibold ${isRamadan ? "text-[#d4af37]" : ""}`}>EGP {product.price}.00</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -304,7 +317,14 @@ function ShopContent() {
                     <p className="text-muted-foreground text-sm capitalize mb-1">{product.color}</p>
                   )}
 
-                  <p className="text-muted-foreground">EGP {product.price}.00</p>
+                  <div>
+                    {(product as any).originalPrice && (
+                      <p className="text-muted-foreground text-sm line-through mb-1">
+                        EGP {(product as any).originalPrice}.00
+                      </p>
+                    )}
+                    <p className="text-muted-foreground font-semibold">EGP {product.price}.00</p>
+                  </div>
                 </div>
               ))}
             </div>

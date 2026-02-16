@@ -244,10 +244,27 @@ function ProductContent() {
         {/* Info */}
         <div className="flex flex-col">
           <div className="mb-8">
-            <p className="text-muted-foreground text-sm uppercase tracking-wide mb-4">{selectedProduct.category}</p>
-            <h1 className="text-4xl md:text-5xl font-light mb-4 text-pretty">{selectedProduct.name}</h1>
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-muted-foreground text-sm uppercase tracking-wide mb-4">{selectedProduct.category}</p>
+                <h1 className="text-4xl md:text-5xl font-light text-pretty">{selectedProduct.name}</h1>
+              </div>
+              {(selectedProduct as any).soldOut && (
+                <div className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium">Sold Out</div>
+              )}
+            </div>
 
-            <p className="text-3xl font-light mb-2">EGP {selectedProduct.price.toFixed(2)}</p>
+            <div className="mb-2">
+              {(selectedProduct as any).originalPrice && (
+                <div className="flex items-center gap-3 mb-2">
+                  <p className="text-2xl font-light text-muted-foreground line-through">
+                    EGP {(selectedProduct as any).originalPrice.toFixed(2)}
+                  </p>
+                  <span className="text-sm font-medium text-secondary-foreground">limited time offer</span>
+                </div>
+              )}
+              <p className="text-3xl font-light">EGP {selectedProduct.price.toFixed(2)}</p>
+            </div>
             <p className="text-muted-foreground capitalize">{selectedProduct.color}</p>
           </div>
 
@@ -307,11 +324,16 @@ function ProductContent() {
           <button
             type="button"
             onClick={handleAddToCart}
-            className={`py-4 px-8 rounded-lg font-medium text-lg transition mb-4 w-full bg-primary-foreground ${
-              isAdded ? "bg-green-600 text-white" : "bg-foreground text-background hover:opacity-90"
+            disabled={(selectedProduct as any).soldOut}
+            className={`py-4 px-8 rounded-lg font-medium text-lg transition mb-4 w-full ${
+              (selectedProduct as any).soldOut
+                ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                : isAdded
+                ? "bg-green-600 text-white"
+                : "bg-foreground text-background hover:opacity-90"
             }`}
           >
-            {isAdded ? "Added to Bag" : "Add to Bag"}
+            {(selectedProduct as any).soldOut ? "Sold Out" : isAdded ? "Added to Bag" : "Add to Bag"}
           </button>
 
           <div className="flex gap-4">
@@ -364,7 +386,14 @@ function ProductContent() {
                 </div>
                 <h3 className="text-lg font-medium group-hover:text-accent transition">{related.name}</h3>
                 <p className="text-muted-foreground text-sm capitalize">{related.color}</p>
-                <p className="font-semibold mt-2">EGP {related.price.toFixed(2)}</p>
+                <div className="mt-2">
+                  {(related as any).originalPrice && (
+                    <p className="text-sm font-medium text-muted-foreground line-through mb-1">
+                      EGP {(related as any).originalPrice.toFixed(2)}
+                    </p>
+                  )}
+                  <p className="font-semibold">EGP {related.price.toFixed(2)}</p>
+                </div>
               </Link>
             ))}
           </div>
