@@ -294,6 +294,7 @@ export const PRODUCTS = [
       "/images/masterpiece-beige-5.png",
     ],
     isNewArrival: true,
+    soldOut: true,
   },
   {
     id: 15,

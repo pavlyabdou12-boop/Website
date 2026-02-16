@@ -208,7 +208,13 @@ function ShopContent() {
                         className="object-cover group-hover:scale-105 transition duration-300"
                       />
 
-                      {product.isNewArrival && (
+                      {(product as any).soldOut && (
+                        <span className="absolute top-3 right-3 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
+                          Sold Out
+                        </span>
+                      )}
+
+                      {product.isNewArrival && !((product as any).soldOut) && (
                         <span
                           className={`absolute top-3 left-3 text-xs font-medium px-2 py-1 rounded ${
                             isRamadan ? "bg-[#d4af37] text-[#1a1a1a]" : "bg-accent text-accent-foreground"

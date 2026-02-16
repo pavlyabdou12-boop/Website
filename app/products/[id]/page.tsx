@@ -244,8 +244,15 @@ function ProductContent() {
         {/* Info */}
         <div className="flex flex-col">
           <div className="mb-8">
-            <p className="text-muted-foreground text-sm uppercase tracking-wide mb-4">{selectedProduct.category}</p>
-            <h1 className="text-4xl md:text-5xl font-light mb-4 text-pretty">{selectedProduct.name}</h1>
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-muted-foreground text-sm uppercase tracking-wide mb-4">{selectedProduct.category}</p>
+                <h1 className="text-4xl md:text-5xl font-light text-pretty">{selectedProduct.name}</h1>
+              </div>
+              {(selectedProduct as any).soldOut && (
+                <div className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium">Sold Out</div>
+              )}
+            </div>
 
             <div className="mb-2">
               {(selectedProduct as any).originalPrice && (
@@ -317,11 +324,16 @@ function ProductContent() {
           <button
             type="button"
             onClick={handleAddToCart}
-            className={`py-4 px-8 rounded-lg font-medium text-lg transition mb-4 w-full bg-primary-foreground ${
-              isAdded ? "bg-green-600 text-white" : "bg-foreground text-background hover:opacity-90"
+            disabled={(selectedProduct as any).soldOut}
+            className={`py-4 px-8 rounded-lg font-medium text-lg transition mb-4 w-full ${
+              (selectedProduct as any).soldOut
+                ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                : isAdded
+                ? "bg-green-600 text-white"
+                : "bg-foreground text-background hover:opacity-90"
             }`}
           >
-            {isAdded ? "Added to Bag" : "Add to Bag"}
+            {(selectedProduct as any).soldOut ? "Sold Out" : isAdded ? "Added to Bag" : "Add to Bag"}
           </button>
 
           <div className="flex gap-4">
