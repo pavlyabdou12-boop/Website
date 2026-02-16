@@ -247,7 +247,17 @@ function ProductContent() {
             <p className="text-muted-foreground text-sm uppercase tracking-wide mb-4">{selectedProduct.category}</p>
             <h1 className="text-4xl md:text-5xl font-light mb-4 text-pretty">{selectedProduct.name}</h1>
 
-            <p className="text-3xl font-light mb-2">EGP {selectedProduct.price.toFixed(2)}</p>
+            <div className="mb-2">
+              {(selectedProduct as any).originalPrice && (
+                <div className="flex items-center gap-3 mb-2">
+                  <p className="text-2xl font-light text-muted-foreground line-through">
+                    EGP {(selectedProduct as any).originalPrice.toFixed(2)}
+                  </p>
+                  <span className="text-sm font-medium text-accent">limited time offer</span>
+                </div>
+              )}
+              <p className="text-3xl font-light">EGP {selectedProduct.price.toFixed(2)}</p>
+            </div>
             <p className="text-muted-foreground capitalize">{selectedProduct.color}</p>
           </div>
 
@@ -364,7 +374,14 @@ function ProductContent() {
                 </div>
                 <h3 className="text-lg font-medium group-hover:text-accent transition">{related.name}</h3>
                 <p className="text-muted-foreground text-sm capitalize">{related.color}</p>
-                <p className="font-semibold mt-2">EGP {related.price.toFixed(2)}</p>
+                <div className="mt-2">
+                  {(related as any).originalPrice && (
+                    <p className="text-sm font-medium text-muted-foreground line-through mb-1">
+                      EGP {(related as any).originalPrice.toFixed(2)}
+                    </p>
+                  )}
+                  <p className="font-semibold">EGP {related.price.toFixed(2)}</p>
+                </div>
               </Link>
             ))}
           </div>
