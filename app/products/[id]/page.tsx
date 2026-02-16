@@ -253,7 +253,7 @@ function ProductContent() {
                   <p className="text-2xl font-light text-muted-foreground line-through">
                     EGP {(selectedProduct as any).originalPrice.toFixed(2)}
                   </p>
-                  <span className="text-sm font-medium text-accent">limited time offer</span>
+                  <span className="text-sm font-medium text-secondary-foreground">limited time offer</span>
                 </div>
               )}
               <p className="text-3xl font-light">EGP {selectedProduct.price.toFixed(2)}</p>
