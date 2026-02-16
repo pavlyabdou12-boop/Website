@@ -345,7 +345,7 @@ export const PRODUCTS = [
     category: "abayas",
     collection: "ramadan",
     color: "black",
-    price: 1755,
+    price: 1650,
     originalPrice: 2199,
     image: "/images/arabic-calligraphy-1.png",
     description: "A black kaftan with a loose, flowing fit, finished with gold lining and simple embroidered details on the edges. Elegant and easy to wear — perfect for special evenings and gatherings",
