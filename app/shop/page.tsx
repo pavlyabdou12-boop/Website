@@ -37,19 +37,39 @@ function ShopContent() {
 
   const uniqueProducts = useMemo(() => {
     const seenProductGroups = new Set<string>()
+
     return PRODUCTS.filter((product) => {
       // Skip the Midi Slip Dress (id: 8) from shop listing
       if (product.id === 8) return false
 
-      // If product has color variants, create a group key based on product name (without color)
+      // Keep Ramadan Masterpiece black + beige separate as standalone cards
+      // while still allowing them to be linked as color variants
+      const isRamadanMasterpiece =
+        product.collection === "ramadan" &&
+        product.name.toLowerCase().includes("masterpiece")
+
+      const isBlackOrBeige =
+        product.color?.toLowerCase() === "black" ||
+        product.color?.toLowerCase() === "beige" ||
+        product.name.toLowerCase().includes("black") ||
+        product.name.toLowerCase().includes("beige")
+
+      if (isRamadanMasterpiece && isBlackOrBeige) {
+        return true
+      }
+
+      // For all other products with variants, show only one grouped card
       if (product.colorVariants && product.colorVariants.length > 0) {
         const baseName = product.name
-          .replace(/Black |Mint |Burgundy |Olive |Beige /gi, "")
+          .replace(/Black |Mint |Burgundy |Olive |Beige |Gray |Brown |Cream |Creamy /gi, "")
           .trim()
+
         const groupKey = baseName || product.name
+
         if (seenProductGroups.has(groupKey)) return false
         seenProductGroups.add(groupKey)
       }
+
       return true
     })
   }, [])
@@ -112,7 +132,6 @@ function ShopContent() {
     <>
       <div id="top" />
 
-      {/* Hero Section (REMOVED black background) */}
       <section className="py-12 px-4 bg-muted/50">
         <div className="max-w-7xl mx-auto">
           <h1
@@ -126,7 +145,6 @@ function ShopContent() {
             {pageDescription}
           </p>
 
-          {/* Collection tabs */}
           <div className="flex items-center gap-3 mt-6">
             <Link
               href="/shop"
@@ -157,7 +175,9 @@ function ShopContent() {
             <Link
               href="/shop?collection=ramadan"
               className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
-                isRamadan ? "bg-amber-950 text-card border-amber-950" : "border-border text-muted-foreground hover:border-foreground"
+                isRamadan
+                  ? "bg-amber-950 text-card border-amber-950"
+                  : "border-border text-muted-foreground hover:border-foreground"
               }`}
             >
               Ramadan Collection
@@ -166,16 +186,22 @@ function ShopContent() {
         </div>
       </section>
 
-      {/* All Products + Sort (REMOVED black background) */}
       <div className="max-w-7xl mx-auto px-4 py-12 bg-card">
         <div className="w-full">
-          <div className={`flex items-center justify-between mb-8 pb-6 border-b ${isRamadan ? "border-[#d4af37]/20" : "border-border"}`}>
+          <div
+            className={`flex items-center justify-between mb-8 pb-6 border-b ${
+              isRamadan ? "border-[#d4af37]/20" : "border-border"
+            }`}
+          >
             <p className={isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}>
               Showing {filteredProducts.length} results
             </p>
 
             <div className="flex items-center gap-2">
-              <label htmlFor="sort" className={`text-sm ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}`}>
+              <label
+                htmlFor="sort"
+                className={`text-sm ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}`}
+              >
                 Sort by:
               </label>
 
@@ -214,10 +240,12 @@ function ShopContent() {
                         </span>
                       )}
 
-                      {product.isNewArrival && !((product as any).soldOut) && (
+                      {product.isNewArrival && !(product as any).soldOut && (
                         <span
                           className={`absolute top-3 left-3 text-xs font-medium px-2 py-1 rounded ${
-                            isRamadan ? "bg-[#d4af37] text-[#1a1a1a]" : "bg-accent text-accent-foreground"
+                            isRamadan
+                              ? "bg-[#d4af37] text-[#1a1a1a]"
+                              : "bg-accent text-accent-foreground"
                           }`}
                         >
                           New
@@ -225,7 +253,11 @@ function ShopContent() {
                       )}
                     </div>
 
-                    <h3 className={`text-lg font-medium group-hover:text-accent transition text-primary ${isRamadan ? "text-foreground" : ""}`}>
+                    <h3
+                      className={`text-lg font-medium group-hover:text-accent transition text-primary ${
+                        isRamadan ? "text-foreground" : ""
+                      }`}
+                    >
                       {product.name}
                     </h3>
                   </Link>
@@ -247,18 +279,28 @@ function ShopContent() {
                       ))}
                     </div>
                   ) : (
-                    <p className={`text-sm capitalize mb-2 ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}`}>
+                    <p
+                      className={`text-sm capitalize mb-2 ${
+                        isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"
+                      }`}
+                    >
                       {product.color}
                     </p>
                   )}
 
                   <div className={`${isRamadan ? "text-[#d4af37]" : ""}`}>
                     {(product as any).originalPrice && (
-                      <p className={`text-sm font-medium line-through ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"} mb-1`}>
+                      <p
+                        className={`text-sm font-medium line-through ${
+                          isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"
+                        } mb-1`}
+                      >
                         EGP {(product as any).originalPrice}.00
                       </p>
                     )}
-                    <p className={`font-semibold ${isRamadan ? "text-[#d4af37]" : ""}`}>EGP {product.price}.00</p>
+                    <p className={`font-semibold ${isRamadan ? "text-[#d4af37]" : ""}`}>
+                      EGP {product.price}.00
+                    </p>
                   </div>
                 </div>
               ))}
@@ -273,11 +315,12 @@ function ShopContent() {
         </div>
       </div>
 
-      {/* New Arrivals */}
       {!collectionFilter && (
         <section className="py-16 md:py-24 px-4 border-t border-border">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-light mb-10 text-center text-pretty">New Arrivals</h2>
+            <h2 className="text-3xl md:text-4xl font-light mb-10 text-center text-pretty">
+              New Arrivals
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {newArrivals.map((product) => (
@@ -294,7 +337,9 @@ function ShopContent() {
                         New
                       </span>
                     </div>
-                    <h3 className="text-lg font-medium mb-2 group-hover:text-accent transition">{product.name}</h3>
+                    <h3 className="text-lg font-medium mb-2 group-hover:text-accent transition">
+                      {product.name}
+                    </h3>
                   </Link>
 
                   {product.colorVariants && product.colorVariants.length > 1 ? (
@@ -336,10 +381,7 @@ function ShopContent() {
 }
 
 function ShopPageInner() {
-  // KEEP the ramadan flag for text styling only, but DO NOT change page background
-  const searchParams = useSearchParams()
-  const collectionFilter = searchParams.get("collection") ?? ""
-  const isRamadan = collectionFilter === "ramadan"
+  useSearchParams()
 
   return (
     <div className="min-h-screen bg-background">
@@ -351,7 +393,6 @@ function ShopPageInner() {
         <ShopContent />
       </Suspense>
 
-      {/* Wrap footer with bg to prevent any “black bleed” */}
       <div className="bg-background">
         <Suspense fallback={<div className="h-20 bg-background" />}>
           <Footer />
