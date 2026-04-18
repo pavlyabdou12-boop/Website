@@ -84,7 +84,7 @@ export default function Header() {
       {/* ✅ URL param sync */}
       <HeaderSearch onSearchChange={handleSearchChange} />
 
-      <div className="max-w-7xl bg-[rgba(208,193,177,1)] leading-7 tracking-normal mx-px my-px px-4 py-6">
+      <div className="w-full bg-[rgba(208,193,177,1)] leading-7 tracking-normal px-4 py-6">
         <div className="flex items-center justify-between">
           {/* Logo - Home */}
           <button
