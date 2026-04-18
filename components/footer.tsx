@@ -18,8 +18,8 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-primary text-primary-foreground mt-24">
-      <div className="max-w-7xl mx-auto px-4 py-16 bg-[rgba(207,193,176,1)] text-foreground">
+    <footer className="bg-[rgba(207,193,176,1)] text-foreground mt-24">
+      <div className="w-full px-4 py-16 bg-[rgba(207,193,176,1)] text-foreground">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div>
             <h3 className="text-xl font-light mb-4">Sisies</h3>
