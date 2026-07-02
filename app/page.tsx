@@ -12,11 +12,11 @@ export default function HomePage() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-  const newArrivals = PRODUCTS.filter((p) => p.isNewArrival)
-    .concat(PRODUCTS.filter((p) => !p.isNewArrival).slice(0, 4 - PRODUCTS.filter((p) => p.isNewArrival).length))
-    .slice(0, 4)
-
   const summerProducts = PRODUCTS.filter((p) => p.collection === "summer")
+  
+  const newArrivals = summerProducts
+    .filter((p) => p.isNewArrival)
+    .slice(0, 4)
 
   return (
     <div className="min-h-screen bg-background">

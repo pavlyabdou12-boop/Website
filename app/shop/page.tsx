@@ -114,19 +114,24 @@ function ShopContent() {
 
   const pageTitle =
     collectionFilter === "ramadan"
-      ? "Ramadan Collection"
+      ? "Kaftans Collection"
       : collectionFilter === "winter"
       ? "Winter Collection"
+      : collectionFilter === "summer"
+      ? "Summer Collection"
       : "Shop All"
 
   const pageDescription =
     collectionFilter === "ramadan"
-      ? "Elegant abayas for the holiest nights"
+      ? "Elegant kaftans for sophisticated style"
       : collectionFilter === "winter"
       ? "Stay warm and stylish with our winter pieces"
+      : collectionFilter === "summer"
+      ? "Fresh and vibrant summer styles"
       : "Browse our complete collection of elegant pieces"
 
   const isRamadan = collectionFilter === "ramadan"
+  const isSummer = collectionFilter === "summer"
 
   return (
     <>
@@ -182,6 +187,17 @@ function ShopContent() {
             >
               Kaftans
             </Link>
+
+            <Link
+              href="/shop?collection=summer"
+              className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
+                isSummer
+                  ? "bg-amber-950 text-card border-amber-950"
+                  : "border-border text-muted-foreground hover:border-foreground"
+              }`}
+            >
+              Summer Collection
+            </Link>
           </div>
         </div>
       </section>
@@ -190,17 +206,17 @@ function ShopContent() {
         <div className="w-full">
           <div
             className={`flex items-center justify-between mb-8 pb-6 border-b ${
-              isRamadan ? "border-[#d4af37]/20" : "border-border"
+              isRamadan ? "border-[#d4af37]/20" : isSummer ? "border-amber-200/50" : "border-border"
             }`}
           >
-            <p className={isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}>
+            <p className={isRamadan ? "text-[#6b5b3e]" : isSummer ? "text-amber-900" : "text-muted-foreground"}>
               Showing {filteredProducts.length} results
             </p>
 
             <div className="flex items-center gap-2">
               <label
                 htmlFor="sort"
-                className={`text-sm ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}`}
+                className={`text-sm ${isRamadan ? "text-[#6b5b3e]" : isSummer ? "text-amber-900" : "text-muted-foreground"}`}
               >
                 Sort by:
               </label>
@@ -210,7 +226,7 @@ function ShopContent() {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className={`border px-3 py-2 rounded cursor-pointer text-sm bg-background border-border ${
-                  isRamadan ? "border-[#d4af37]/30 text-foreground" : ""
+                  isRamadan ? "border-[#d4af37]/30 text-foreground" : isSummer ? "border-amber-200/50" : ""
                 }`}
               >
                 <option value="featured">Featured</option>
