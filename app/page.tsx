@@ -12,11 +12,11 @@ export default function HomePage() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-  const newArrivals = PRODUCTS.filter((p) => p.isNewArrival)
-    .concat(PRODUCTS.filter((p) => !p.isNewArrival).slice(0, 4 - PRODUCTS.filter((p) => p.isNewArrival).length))
+  const summerProducts = PRODUCTS.filter((p) => p.collection === "summer")
+  
+  const newArrivals = summerProducts
+    .filter((p) => p.isNewArrival)
     .slice(0, 4)
-
-  const ramadanProducts = PRODUCTS.filter((p) => p.collection === "ramadan")
 
   return (
     <div className="min-h-screen bg-background">
@@ -54,60 +54,38 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Ramadan Collection Section */}
-      <section className="py-16 md:py-24 px-4 bg-[#1a1a1a] bg-white">
+      {/* Summer Collection Section */}
+      <section className="py-16 md:py-24 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-light mb-4 text-center text-pretty text-[#d4af37]">
-            Ramadan Collection
+          <h2 className="text-4xl md:text-5xl font-light mb-4 text-center text-pretty text-amber-900">
+            Summer Collection
           </h2>
-          <p className="text-center text-[#c4a882] mb-12 text-lg font-light">
-            Elegance for the holiest nights
+          <p className="text-center text-amber-800 mb-12 text-lg font-light">
+            Fresh styles for the season
           </p>
 
-          {/* Cover Photo */}
-          <Link
-            href="/shop?collection=ramadan"
-            onClick={handleProductClick}
-            className="block relative overflow-hidden rounded-lg mb-12 group"
-          >
-            <div className="relative aspect-[16/9] md:aspect-[21/9]">
-              <Image
-                src="/images/ramadan-cover.png"
-                alt="Ramadan Collection - Sisies Boutique"
-                fill
-                className="object-cover group-hover:scale-105 transition duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10">
-                <span className="inline-block bg-[#d4af37] text-[#1a1a1a] px-6 py-2 text-sm font-medium tracking-wider uppercase rounded opacity-60 bg-secondary">
-                  Shop Ramadan Collection
-                </span>
-              </div>
-            </div>
-          </Link>
-
-          {/* Ramadan Products */}
+          {/* Summer Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {ramadanProducts.map((product) => (
+            {summerProducts.map((product) => (
               <Link
                 key={product.id}
                 href={`/products/${product.id}`}
                 className="group cursor-pointer"
                 onClick={handleProductClick}
               >
-                <div className="relative overflow-hidden bg-[#2a2a2a] aspect-[3/4] mb-4 rounded-lg">
+                <div className="relative overflow-hidden bg-muted aspect-[3/4] mb-4 rounded-lg">
                   <Image
                     src={product.image || "/placeholder.svg"}
                     alt={product.name}
                     fill
                     className="object-cover group-hover:scale-105 transition duration-300"
                   />
-                  <span className="absolute top-3 left-3 bg-[#d4af37] text-[#1a1a1a] px-3 py-1 text-xs font-medium rounded opacity-70 bg-card">
+                  <span className="absolute top-3 left-3 bg-foreground text-background px-3 py-1 text-xs font-medium rounded opacity-70">
                     New
                   </span>
                 </div>
-                <h3 className="text-xl font-medium mb-2 text-[#f0e6d3] text-primary">{product.name}</h3>
-                <p className="text-[#d4af37] font-semibold">EGP {product.price}.00</p>
+                <h3 className="text-xl font-medium mb-2 text-foreground">{product.name}</h3>
+                <p className="text-muted-foreground font-semibold">EGP {product.price}.00</p>
               </Link>
             ))}
           </div>
@@ -157,7 +135,7 @@ export default function HomePage() {
           <h2 className="text-4xl md:text-5xl font-light mb-12 text-center text-pretty">Best Sellers</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[4, 2].map((productId) => {
+            {[18, 19, 20, 21].map((productId) => {
               const product = PRODUCTS.find((p) => p.id === productId)
               return product ? (
                 <Link

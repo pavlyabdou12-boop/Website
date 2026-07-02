@@ -42,10 +42,10 @@ function ShopContent() {
       // Skip the Midi Slip Dress (id: 8) from shop listing
       if (product.id === 8) return false
 
-      // Keep Ramadan Masterpiece black + beige separate as standalone cards
+      // Keep Kaftans Masterpiece black + beige separate as standalone cards
       // while still allowing them to be linked as color variants
-      const isRamadanMasterpiece =
-        product.collection === "ramadan" &&
+      const isKaftansMasterpiece =
+        product.collection === "kaftans" &&
         product.name.toLowerCase().includes("masterpiece")
 
       const isBlackOrBeige =
@@ -54,7 +54,7 @@ function ShopContent() {
         product.name.toLowerCase().includes("black") ||
         product.name.toLowerCase().includes("beige")
 
-      if (isRamadanMasterpiece && isBlackOrBeige) {
+      if (isKaftansMasterpiece && isBlackOrBeige) {
         return true
       }
 
@@ -113,19 +113,25 @@ function ShopContent() {
   }, [])
 
   const pageTitle =
-    collectionFilter === "ramadan"
-      ? "Ramadan Collection"
+    collectionFilter === "kaftans"
+      ? "Kaftans Collection"
       : collectionFilter === "winter"
       ? "Winter Collection"
+      : collectionFilter === "summer"
+      ? "Summer Collection"
       : "Shop All"
 
   const pageDescription =
-    collectionFilter === "ramadan"
-      ? "Elegant abayas for the holiest nights"
+    collectionFilter === "kaftans"
+      ? "Elegant kaftans for sophisticated style"
       : collectionFilter === "winter"
       ? "Stay warm and stylish with our winter pieces"
+      : collectionFilter === "summer"
+      ? "Fresh and vibrant summer styles"
       : "Browse our complete collection of elegant pieces"
 
+  const isKaftans = collectionFilter === "kaftans"
+  const isSummer = collectionFilter === "summer"
   const isRamadan = collectionFilter === "ramadan"
 
   return (
@@ -151,8 +157,6 @@ function ShopContent() {
               className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
                 !collectionFilter
                   ? "bg-amber-950 text-card border-amber-950"
-                  : isRamadan
-                  ? "border-[#d4af37]/40 text-[#6b5b3e] hover:border-[#d4af37]"
                   : "border-border text-muted-foreground hover:border-foreground"
               }`}
             >
@@ -164,8 +168,6 @@ function ShopContent() {
               className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
                 collectionFilter === "winter"
                   ? "bg-amber-950 text-card border-amber-950"
-                  : isRamadan
-                  ? "border-[#d4af37]/40 text-[#6b5b3e] hover:border-[#d4af37]"
                   : "border-border text-muted-foreground hover:border-foreground"
               }`}
             >
@@ -173,14 +175,25 @@ function ShopContent() {
             </Link>
 
             <Link
-              href="/shop?collection=ramadan"
+              href="/shop?collection=kaftans"
               className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
-                isRamadan
+                collectionFilter === "kaftans"
                   ? "bg-amber-950 text-card border-amber-950"
                   : "border-border text-muted-foreground hover:border-foreground"
               }`}
             >
-              Ramadan Collection
+              Kaftans
+            </Link>
+
+            <Link
+              href="/shop?collection=summer"
+              className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
+                isSummer
+                  ? "bg-amber-950 text-card border-amber-950"
+                  : "border-border text-muted-foreground hover:border-foreground"
+              }`}
+            >
+              Summer Collection
             </Link>
           </div>
         </div>
@@ -190,17 +203,17 @@ function ShopContent() {
         <div className="w-full">
           <div
             className={`flex items-center justify-between mb-8 pb-6 border-b ${
-              isRamadan ? "border-[#d4af37]/20" : "border-border"
+              isKaftans ? "border-[#d4af37]/20" : isSummer ? "border-amber-200/50" : "border-border"
             }`}
           >
-            <p className={isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}>
+            <p className={isKaftans ? "text-[#6b5b3e]" : isSummer ? "text-amber-900" : "text-muted-foreground"}>
               Showing {filteredProducts.length} results
             </p>
 
             <div className="flex items-center gap-2">
               <label
                 htmlFor="sort"
-                className={`text-sm ${isRamadan ? "text-[#6b5b3e]" : "text-muted-foreground"}`}
+                className={`text-sm ${isKaftans ? "text-[#6b5b3e]" : isSummer ? "text-amber-900" : "text-muted-foreground"}`}
               >
                 Sort by:
               </label>
@@ -210,7 +223,7 @@ function ShopContent() {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className={`border px-3 py-2 rounded cursor-pointer text-sm bg-background border-border ${
-                  isRamadan ? "border-[#d4af37]/30 text-foreground" : ""
+                  isKaftans ? "border-[#d4af37]/30 text-foreground" : isSummer ? "border-amber-200/50" : ""
                 }`}
               >
                 <option value="featured">Featured</option>
