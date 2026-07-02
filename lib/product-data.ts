@@ -540,9 +540,33 @@ export const PRODUCTS = [
     image: "/images/gotoset-yellow-1.jpg",
     description: "Vibrant yellow matching two-piece set with comfortable wide-leg pants and belted top for summer elegance",
     sizes: ["One Size"],
+    colorVariants: [
+      { color: "yellow", productId: 26 },
+      { color: "pink", productId: 27 },
+    ],
     additionalImages: [
       "/images/gotoset-yellow-2.jpg",
       "/images/gotoset-yellow-3.jpg",
+    ],
+    isNewArrival: true,
+  },
+  {
+    id: 27,
+    name: "Go to Set",
+    category: "sets",
+    collection: "summer",
+    color: "pink",
+    price: 2000,
+    image: "/images/gotoset-pink-1.jpg",
+    description: "Elegant pink matching two-piece set with comfortable wide-leg pants and belted top for summer style",
+    sizes: ["One Size"],
+    colorVariants: [
+      { color: "yellow", productId: 26 },
+      { color: "pink", productId: 27 },
+    ],
+    additionalImages: [
+      "/images/gotoset-pink-2.jpg",
+      "/images/gotoset-pink-3.jpg",
     ],
     isNewArrival: true,
   },
