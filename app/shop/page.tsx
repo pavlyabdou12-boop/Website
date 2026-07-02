@@ -132,6 +132,7 @@ function ShopContent() {
 
   const isKaftans = collectionFilter === "kaftans"
   const isSummer = collectionFilter === "summer"
+  const isRamadan = collectionFilter === "ramadan"
 
   return (
     <>
