@@ -180,7 +180,7 @@ function ShopContent() {
                   : "border-border text-muted-foreground hover:border-foreground"
               }`}
             >
-              Ramadan Collection
+              Kaftans
             </Link>
           </div>
         </div>
