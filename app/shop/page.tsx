@@ -156,8 +156,6 @@ function ShopContent() {
               className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
                 !collectionFilter
                   ? "bg-amber-950 text-card border-amber-950"
-                  : isRamadan
-                  ? "border-[#d4af37]/40 text-[#6b5b3e] hover:border-[#d4af37]"
                   : "border-border text-muted-foreground hover:border-foreground"
               }`}
             >
@@ -169,8 +167,6 @@ function ShopContent() {
               className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
                 collectionFilter === "winter"
                   ? "bg-amber-950 text-card border-amber-950"
-                  : isRamadan
-                  ? "border-[#d4af37]/40 text-[#6b5b3e] hover:border-[#d4af37]"
                   : "border-border text-muted-foreground hover:border-foreground"
               }`}
             >
