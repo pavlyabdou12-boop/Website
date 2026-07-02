@@ -410,7 +410,7 @@ export const PRODUCTS = [
     collection: "summer",
     color: "black",
     price: 2600,
-    image: "/images/polka-black-1.jpg",
+    image: "/images/polka-black-new.jpg",
     description: "Stylish black shirt with elegant white polka dot collar and cuff details for a sophisticated summer look",
     sizes: ["One Size"],
     colorVariants: [
@@ -430,8 +430,8 @@ export const PRODUCTS = [
     collection: "summer",
     color: "white",
     price: 2600,
-    image: "/images/polka-white-1.jpg",
-    description: "Chic white shirt with sophisticated gray polka dot collar and cuff details for effortless summer style",
+    image: "/images/polka-white-new.jpg",
+    description: "Chic white shirt with sophisticated sage green polka dot collar and cuff details for effortless summer style",
     sizes: ["One Size"],
     colorVariants: [
       { color: "black", productId: 20 },
