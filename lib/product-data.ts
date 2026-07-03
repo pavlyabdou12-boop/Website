@@ -144,19 +144,7 @@ export const PRODUCTS = [
       "/images/black-20royal-20cape-204.jpeg",
     ],
   },
-  {
-    id: 8,
-    name: "Midi Slip Dress",
-    category: "dresses",
-    collection: "winter",
-    color: "dusty-rose",
-    price: 139,
-    image: "/slip-dress-elegant.jpg",
-    description: "Minimalist slip dress in dusty rose",
-    sizes: ["XS", "S", "M", "L", "XL"],
-    reviews: 18,
-    additionalImages: [],
-  },
+
   {
     id: 9,
     name: "Trench Coat",
