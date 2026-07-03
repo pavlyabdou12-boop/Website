@@ -18,7 +18,7 @@ function getColorHex(color: string): string {
     cream: "#FFFDD0",
     creamy: "#F5F5DC",
     yellow: "#FFD700",
-    pink: "#FFC0CB",
+    pink: "#FFB6D9",
   }
   return colorMap[color.toLowerCase()] || "#cccccc"
 }
