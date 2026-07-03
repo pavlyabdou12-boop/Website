@@ -565,8 +565,7 @@ export const PRODUCTS = [
       { color: "pink", productId: 27 },
     ],
     additionalImages: [
-      "/images/gotoset-pink-2.jpg",
-      "/images/gotoset-pink-3.jpg",
+     
     ],
     isNewArrival: true,
   },
