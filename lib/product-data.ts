@@ -366,7 +366,7 @@ export const PRODUCTS = [
     collection: "summer",
     color: "yellow",
     price: 2200,
-    image:  "/images/glimmer-set-yellow-new.jpg",
+    image:  "/images/gotoset-yellow-1.jpg",
     description: "Luxurious yellow glimmer set with shimmering details and flowing silhouette for an effortless summer look",
     sizes: ["One Size"],
     colorVariants: [
@@ -537,7 +537,7 @@ export const PRODUCTS = [
     collection: "summer",
     color: "yellow",
     price: 2000,
-    image: "/images/gotoset-yellow-1.jpg",
+    image: "/images/glimmer-set-yellow-new.jpg",
     description: "Vibrant yellow matching two-piece set with comfortable wide-leg pants and belted top for summer elegance",
     sizes: ["One Size"],
     colorVariants: [
