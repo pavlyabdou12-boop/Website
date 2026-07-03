@@ -566,8 +566,7 @@ export const PRODUCTS = [
     ],
     additionalImages: [
       "/images/gotoset-pink-alt-1.jpg",
-      "/images/gotoset-pink-2.jpg",
-      "/images/gotoset-pink-3.jpg",
+     
     ],
     isNewArrival: true,
   },
