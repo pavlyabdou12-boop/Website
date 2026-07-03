@@ -366,7 +366,7 @@ export const PRODUCTS = [
     collection: "summer",
     color: "yellow",
     price: 2200,
-    image:  "/images/glimmer-set-yellow-2.jpg",
+    image:  "/images/glimmer-set-yellow-new.jpg",
     description: "Luxurious yellow glimmer set with shimmering details and flowing silhouette for an effortless summer look",
     sizes: ["One Size"],
     colorVariants: [
@@ -374,7 +374,7 @@ export const PRODUCTS = [
       { color: "brown", productId: 19 },
     ],
     additionalImages: [
-    ,
+      "/images/glimmer-set-yellow-2.jpg",
       "/images/glimmer-set-yellow-3.jpg",
       "/images/glimmer-set-yellow-4.jpg",
       "/images/glimmer-set-yellow-5.jpg",
@@ -557,7 +557,7 @@ export const PRODUCTS = [
     collection: "summer",
     color: "pink",
     price: 2000,
-    image: "/images/gotoset-pink-1.jpg",
+    image: "/images/gotoset-pink-new-1.jpg",
     description: "Elegant pink matching two-piece set with comfortable wide-leg pants and belted top for summer style",
     sizes: ["One Size"],
     colorVariants: [
@@ -565,7 +565,9 @@ export const PRODUCTS = [
       { color: "pink", productId: 27 },
     ],
     additionalImages: [
-     
+      "/images/gotoset-pink-alt-1.jpg",
+      "/images/gotoset-pink-2.jpg",
+      "/images/gotoset-pink-3.jpg",
     ],
     isNewArrival: true,
   },
