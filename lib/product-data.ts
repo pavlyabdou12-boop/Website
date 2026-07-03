@@ -366,7 +366,7 @@ export const PRODUCTS = [
     collection: "summer",
     color: "yellow",
     price: 2200,
-    image: "/images/glimmer-set-yellow-1.jpg",
+    image:  "/images/glimmer-set-yellow-2.jpg",
     description: "Luxurious yellow glimmer set with shimmering details and flowing silhouette for an effortless summer look",
     sizes: ["One Size"],
     colorVariants: [
@@ -374,7 +374,7 @@ export const PRODUCTS = [
       { color: "brown", productId: 19 },
     ],
     additionalImages: [
-      "/images/glimmer-set-yellow-2.jpg",
+    ,
       "/images/glimmer-set-yellow-3.jpg",
       "/images/glimmer-set-yellow-4.jpg",
       "/images/glimmer-set-yellow-5.jpg",
