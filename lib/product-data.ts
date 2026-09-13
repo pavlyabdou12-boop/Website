@@ -455,6 +455,7 @@ export const PRODUCTS = [
       "/images/pankou-olive-5.jpg",
     ],
     isNewArrival: true,
+    soldOut: true,
   },
   {
     id: 23,
@@ -477,6 +478,7 @@ export const PRODUCTS = [
       "/images/pankou-burgundy-5.jpg",
     ],
     isNewArrival: true,
+    soldOut: true,
   },
   {
     id: 24,
