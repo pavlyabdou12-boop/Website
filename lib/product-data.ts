@@ -214,6 +214,7 @@ export const PRODUCTS = [
       "/images/mint-breeze-7.jpeg",
     ],
     isNewArrival: true,
+    soldOut: true,
   },
   {
     id: 12,
@@ -239,6 +240,7 @@ export const PRODUCTS = [
       "/images/burgundy-breeze-size-chart.jpeg",
     ],
     isNewArrival: true,
+    soldOut: true,
   },
   {
     id: 13,
