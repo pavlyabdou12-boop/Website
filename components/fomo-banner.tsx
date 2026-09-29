@@ -40,7 +40,7 @@ export function FomoBanner() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 text-center text-sm sm:flex-row sm:text-left">
           <p className="flex items-center gap-2 font-medium">
             <Sparkles className="h-4 w-4 text-[#d7a26f]" aria-hidden="true" />
-            Early winter edit: extra 15% off sale styles
+            Early winter edit: extra 15% off on all collections
           </p>
           <div className="flex items-center gap-3">
             <span className="text-xs uppercase tracking-[0.16em] text-[#cdb9a7]">Ends in</span>
