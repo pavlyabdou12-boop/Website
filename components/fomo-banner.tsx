@@ -5,15 +5,28 @@ import Link from "next/link"
 import { ArrowRight, Clock3, Sparkles, Users } from "lucide-react"
 
 const OFFER_DURATION = 3 * 60 * 60 + 47 * 60 + 12
+const VIEWER_COUNT_MIN = 12
+const VIEWER_COUNT_MAX = 28
 
 export function FomoBanner() {
   const [secondsLeft, setSecondsLeft] = useState(OFFER_DURATION)
+  const [viewerCount, setViewerCount] = useState(18)
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       setSecondsLeft((current) => (current > 0 ? current - 1 : OFFER_DURATION))
     }, 1000)
-    return () => window.clearInterval(timer)
+
+    const viewerTimer = window.setInterval(() => {
+      setViewerCount(
+        Math.floor(Math.random() * (VIEWER_COUNT_MAX - VIEWER_COUNT_MIN + 1)) + VIEWER_COUNT_MIN,
+      )
+    }, 18_000)
+
+    return () => {
+      window.clearInterval(timer)
+      window.clearInterval(viewerTimer)
+    }
   }, [])
 
   const hours = Math.floor(secondsLeft / 3600)
@@ -43,8 +56,8 @@ export function FomoBanner() {
 
       <section className="border-b border-[#eadfd5] bg-[#fbf8f4] px-4 py-3 text-[#5b4535]">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center text-xs sm:justify-between sm:text-left">
-          <span className="flex items-center gap-2"><Users className="h-4 w-4" aria-hidden="true" /> 18 people are browsing Sisies right now</span>
-          <span className="flex items-center gap-2"><Clock3 className="h-4 w-4" aria-hidden="true" /> Free delivery on orders over EGP 1,500</span>
+          <span className="flex items-center gap-2" aria-live="polite"><Users className="h-4 w-4" aria-hidden="true" /> {viewerCount} people are browsing Sisies right now</span>
+          <span className="flex items-center gap-2"><Clock3 className="h-4 w-4" aria-hidden="true" /> Free delivery on orders over EGP 2,500</span>
         </div>
       </section>
     </>
