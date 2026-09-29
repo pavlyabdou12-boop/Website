@@ -6,6 +6,7 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { PRODUCTS } from "@/lib/product-data"
 import { Suspense } from "react"
+import { FomoBanner, ScarcityNote, StickyShopCta } from "@/components/fomo-banner"
 
 export default function HomePage() {
   const handleProductClick = () => {
@@ -23,6 +24,8 @@ export default function HomePage() {
       <Suspense fallback={<div className="h-16 bg-background" />}>
         <Header />
       </Suspense>
+
+      <FomoBanner />
 
       {/* Hero Banner */}
       <section className="relative h-screen bg-secondary">
@@ -42,13 +45,14 @@ export default function HomePage() {
             <h1 className="text-5xl md:text-6xl mb-6 text-pretty text-center shadow-xl tracking-tighter text-background mt-96 font-extralight">
               Effortlessly Chic
             </h1>
-            <p className="mb-8 text-3xl overline text-card font-extralight">Simply confident ,simply sisies</p>
+            <p className="mb-4 text-3xl overline text-card font-extralight">Simply confident ,simply sisies</p>
+            <p className="mb-8 text-sm font-medium uppercase tracking-[0.2em] text-background/90">The pieces everyone is asking about</p>
             <Link
-              href="/shop"
+              href="/sale"
               onClick={handleProductClick}
               className="inline-block text-accent-foreground rounded hover:opacity-90 transition font-medium mx-0 leading-7 px-8 py-3 my-0 border-0 opacity-75 bg-primary"
             >
-              Shop Now
+              Shop the limited edit
             </Link>
           </div>
         </div>
@@ -95,8 +99,9 @@ export default function HomePage() {
                     EGP {product.price.toLocaleString()}.00
                   </span>
                   {product.originalPrice && (
-                    <span className="text-sm font-semibold text-foreground">limited time offer</span>
+                    <span className="text-sm font-semibold text-[#9a4f36]">limited time offer</span>
                   )}
+                  <ScarcityNote soldOut={product.soldOut} />
                 </div>
               </Link>
             ))}
@@ -210,6 +215,7 @@ export default function HomePage() {
       <Suspense fallback={<div className="h-20 bg-background" />}>
         <Footer />
       </Suspense>
+      <StickyShopCta />
     </div>
   )
 }
