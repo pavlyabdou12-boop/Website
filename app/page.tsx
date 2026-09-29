@@ -85,7 +85,19 @@ export default function HomePage() {
                   </span>
                 </div>
                 <h3 className="text-xl font-medium mb-2 text-foreground">{product.name}</h3>
-                <p className="text-muted-foreground font-semibold">EGP {product.price}.00</p>
+                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                  {product.originalPrice && (
+                    <span className="text-lg text-muted-foreground line-through">
+                      EGP {product.originalPrice.toLocaleString()}.00
+                    </span>
+                  )}
+                  <span className="text-xl font-semibold text-foreground">
+                    EGP {product.price.toLocaleString()}.00
+                  </span>
+                  {product.originalPrice && (
+                    <span className="text-sm font-semibold text-foreground">limited time offer</span>
+                  )}
+                </div>
               </Link>
             ))}
           </div>
@@ -122,7 +134,17 @@ export default function HomePage() {
                   {product.name}{" "}
                   {product.color && `- ${product.color.charAt(0).toUpperCase() + product.color.slice(1)}`}
                 </h3>
-                <p className="text-muted-foreground">EGP {product.price}.00</p>
+                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                  {product.originalPrice && (
+                    <span className="text-lg text-muted-foreground line-through">
+                      EGP {product.originalPrice.toLocaleString()}.00
+                    </span>
+                  )}
+                  <span className="text-lg font-medium">EGP {product.price.toLocaleString()}.00</span>
+                  {product.originalPrice && (
+                    <span className="text-sm font-semibold">limited time offer</span>
+                  )}
+                </div>
               </Link>
             ))}
           </div>
@@ -153,7 +175,17 @@ export default function HomePage() {
                     />
                   </div>
                   <h3 className="text-lg font-medium mb-2">{product.name}</h3>
-                  <p className="text-muted-foreground">EGP {product.price}.00</p>
+                  <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                    {product.originalPrice && (
+                      <span className="text-lg text-muted-foreground line-through">
+                        EGP {product.originalPrice.toLocaleString()}.00
+                      </span>
+                    )}
+                    <span className="text-lg font-medium">EGP {product.price.toLocaleString()}.00</span>
+                    {product.originalPrice && (
+                      <span className="text-sm font-semibold">limited time offer</span>
+                    )}
+                  </div>
                 </Link>
               ) : null
             })}
