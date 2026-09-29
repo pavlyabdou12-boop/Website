@@ -45,7 +45,7 @@ export const PRODUCTS = [
   category: "outerwear",
   collection: "winter",
   color: "cream",
-  price: 720,
+  price: 840,
   originalPrice: 1300,
     image: "/sisies-vanilla-cape.jpg",
     description: "Creamy white oversized cape with statement collar",
