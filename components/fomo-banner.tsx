@@ -48,8 +48,13 @@ export function FomoBanner() {
             <span className="font-mono font-semibold tabular-nums" aria-label={`${hours} hours ${minutes} minutes ${seconds} seconds remaining`}>
               {pad(hours)}:{pad(minutes)}:{pad(seconds)}
             </span>
-            <Link href="/shop" className="inline-flex items-center gap-1 font-semibold underline underline-offset-4 hover:text-[#d7a26f]">
-              Shop now <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-1 font-semibold underline underline-offset-4 hover:text-[#d7a26f]"
+              suppressHydrationWarning
+            >
+              <span>Shop now</span>
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
           </div>
         </div>
