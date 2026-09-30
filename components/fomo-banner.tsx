@@ -7,10 +7,11 @@ import { ArrowRight, Clock3, Sparkles, Users } from "lucide-react"
 const OFFER_DURATION = 3 * 60 * 60 + 47 * 60 + 12
 const VIEWER_COUNT_MIN = 12
 const VIEWER_COUNT_MAX = 28
+const INITIAL_VIEWER_COUNT = 18
 
 export function FomoBanner() {
   const [secondsLeft, setSecondsLeft] = useState(OFFER_DURATION)
-  const [viewerCount, setViewerCount] = useState(18)
+  const [viewerCount, setViewerCount] = useState(INITIAL_VIEWER_COUNT)
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -47,7 +48,7 @@ export function FomoBanner() {
             <span className="font-mono font-semibold tabular-nums" aria-label={`${hours} hours ${minutes} minutes ${seconds} seconds remaining`}>
               {pad(hours)}:{pad(minutes)}:{pad(seconds)}
             </span>
-            <Link href="/sale" suppressHydrationWarning className="inline-flex items-center gap-1 font-semibold underline underline-offset-4 hover:text-[#d7a26f]">
+            <Link href="/shop" className="inline-flex items-center gap-1 font-semibold underline underline-offset-4 hover:text-[#d7a26f]">
               Shop now <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
           </div>
@@ -68,7 +69,7 @@ export function FomoBanner() {
 export function StickyShopCta() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 shadow-[0_-8px_24px_rgba(46,37,31,0.08)] backdrop-blur md:hidden">
-      <Link href="/sale" className="flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
+      <Link href="/shop" className="flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
         Shop limited-time offers <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </Link>
     </div>
