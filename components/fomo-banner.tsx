@@ -48,7 +48,7 @@ export function FomoBanner() {
               {pad(hours)}:{pad(minutes)}:{pad(seconds)}
             </span>
             <Link href="/sale" className="inline-flex items-center gap-1 font-semibold underline underline-offset-4 hover:text-[#d7a26f]">
-              Shop the edit <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              Shop now <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -56,7 +56,8 @@ export function FomoBanner() {
 
       <section className="border-b border-[#eadfd5] bg-[#fbf8f4] px-4 py-3 text-[#5b4535]">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center text-xs sm:justify-between sm:text-left">
-          <span className="flex items-center gap-2" aria-live="polite"><Users className="h-4 w-4" aria-hidden="true" /> {viewerCount} people are browsing Sisies right now</span>
+          <span className="flex items-center gap-2" aria-live="polite"><Users className="h-4 w-4" aria-hidden="true" /> <span><strong className="font-bold">{viewerCount} people</strong> are browsing Sisies right now</span></span>
+          <span className="basis-full text-center text-[11px] leading-relaxed sm:basis-auto sm:text-left"><strong className="font-bold text-[#9a4f36]">Find us at LA Market</strong>, Hydeout Events Arena, <strong className="font-bold">2–3 November</strong>, Booth <strong className="font-bold">174</strong> for extra discounts and exclusive items</span>
           <span className="flex items-center gap-2"><Clock3 className="h-4 w-4" aria-hidden="true" /> Free delivery on orders over EGP 2,500</span>
         </div>
       </section>

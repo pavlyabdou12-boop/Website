@@ -52,7 +52,7 @@ export default function HomePage() {
               onClick={handleProductClick}
               className="inline-block text-accent-foreground rounded hover:opacity-90 transition font-medium mx-0 leading-7 px-8 py-3 my-0 border-0 opacity-75 bg-primary"
             >
-              Shop the limited edit
+              Shop now
             </Link>
           </div>
         </div>
