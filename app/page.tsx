@@ -42,7 +42,7 @@ export default function HomePage() {
             <p className="mb-4 text-3xl overline text-card font-extralight">Simply confident ,simply sisies</p>
             <p className="mb-8 text-sm font-medium uppercase tracking-[0.2em] text-background/90">The pieces everyone is asking about</p>
             <Link
-              href="/sale"
+              href="/shop"
 
               className="inline-block text-accent-foreground rounded hover:opacity-90 transition font-medium mx-0 leading-7 px-8 py-3 my-0 border-0 opacity-75 bg-primary"
             >
