@@ -1,5 +1,3 @@
-"use client"
-
 import Link from "next/link"
 import Image from "next/image"
 import Header from "@/components/header"
@@ -9,10 +7,6 @@ import { Suspense } from "react"
 import { FomoBanner, ScarcityNote, StickyShopCta } from "@/components/fomo-banner"
 
 export default function HomePage() {
-  const handleProductClick = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
-
   const summerProducts = PRODUCTS.filter((p) => p.collection === "summer")
   
   const newArrivals = summerProducts
@@ -48,8 +42,8 @@ export default function HomePage() {
             <p className="mb-4 text-3xl overline text-card font-extralight">Simply confident ,simply sisies</p>
             <p className="mb-8 text-sm font-medium uppercase tracking-[0.2em] text-background/90">The pieces everyone is asking about</p>
             <Link
-              href="/sale"
-              onClick={handleProductClick}
+              href="/shop"
+
               className="inline-block text-accent-foreground rounded hover:opacity-90 transition font-medium mx-0 leading-7 px-8 py-3 my-0 border-0 opacity-75 bg-primary"
             >
               Shop now
@@ -75,7 +69,6 @@ export default function HomePage() {
                 key={product.id}
                 href={`/products/${product.id}`}
                 className="group cursor-pointer"
-                onClick={handleProductClick}
               >
                 <div className="relative overflow-hidden bg-muted aspect-[3/4] mb-4 rounded-lg">
                   <Image
@@ -120,7 +113,6 @@ export default function HomePage() {
                 key={product.id}
                 href={`/products/${product.id}`}
                 className="group cursor-pointer"
-                onClick={handleProductClick}
               >
                 <div className="relative overflow-hidden bg-muted aspect-square mb-4">
                   <Image
@@ -169,7 +161,7 @@ export default function HomePage() {
                   key={product.id}
                   href={`/products/${product.id}`}
                   className="group cursor-pointer"
-                  onClick={handleProductClick}
+    
                 >
                   <div className="relative overflow-hidden bg-muted aspect-square mb-4">
                     <Image
